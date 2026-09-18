@@ -764,13 +764,13 @@ function PlanFullscreen({
             className="stop-picker-modal"
             role="dialog"
             aria-modal="true"
-            aria-label={placePicker.mode === "insert" ? "일정 추가" : "장소 변경"}
+            aria-label="장소 변경"
           >
             <button
               type="button"
               className="modal-close"
               onClick={() => setPlacePicker(null)}
-              aria-label={placePicker.mode === "insert" ? "일정 추가 닫기" : "장소 변경 닫기"}
+              aria-label="장소 변경 닫기"
             >
               <X size={18} strokeWidth={1.8} aria-hidden="true" />
             </button>
