@@ -1485,9 +1485,41 @@ function refineDisplayedSchedule(dayPlans = []) {
       }
     }
 
-    // 실제 백엔드 식당 데이터가 없는 경우 프론트가 가짜 "저녁 식사" 카드를
-    // 만들지 않는다. 1일차 저녁 보강은 useTripPlanner에서 실제 식당 API를
-    // AI 일정 생성과 병렬로 조회한 뒤 반영한다.
+    const isLastDay = dayIndex === dayPlans.length - 1;
+    const hasDinner = events.some(isDinnerEvent);
+    const lateFlight = [...events].reverse().find((event) => {
+      const type = String(event?.[6]?.type || "").toUpperCase();
+      return ["FLIGHT", "AIRPORT"].includes(type) && minutesFromClock(event?.[0], 24 * 60) >= 17 * 60;
+    });
+    const eveningDeadline = lateFlight ? minutesFromClock(lateFlight[0], 24 * 60) - 90 : 21 * 60;
+
+    if (!hasDinner && (!isLastDay || eveningDeadline >= 19 * 60)) {
+      const dinnerStart = Math.max(18 * 60, Math.min(cursor, 19 * 60));
+      if (dinnerStart + 60 <= eveningDeadline) {
+        const date = String(events[0]?.[6]?.startAt || "").match(/^\d{4}-\d{2}-\d{2}/)?.[0];
+        events.push([
+          clockFromMinutes(dinnerStart),
+          "🍽️",
+          "저녁 식사",
+          "선호 음식과 현재 동선을 반영한 저녁 식사 시간이에요. 장소 변경에서 원하는 맛집으로 바꿀 수 있습니다.",
+          "60분",
+          20,
+          {
+            id: `frontend-dinner-day-${dayIndex + 1}`,
+            type: "RESTAURANT",
+            category: "DINNER",
+            order: events.length + 1,
+            startAt: date ? `${date}T${clockFromMinutes(dinnerStart)}:00` : null,
+            endAt: date ? `${date}T${clockFromMinutes(dinnerStart + 60)}:00` : null,
+            stayMinutes: 60,
+            travelMinutes: 20,
+            isLocked: false,
+            syntheticMeal: true,
+            estimated: { startTime: true, stayMinutes: false, travelMinutes: true, price: true },
+          },
+        ]);
+      }
+    }
 
     return [day[0], day[1], events];
   });

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { preconnect, preload } from "react-dom";
-import { apiClient, isMockModeEnabled } from "../api/apiClient";
+import { isMockModeEnabled } from "../api/apiClient";
 import { recommendAccommodations } from "../api/accommodationApi";
 import { searchFlights } from "../api/flightApi";
 import { createTrip } from "../api/tripApi";
@@ -10,7 +10,6 @@ import {
   requestTripPlanRevision,
 } from "../api/tripPlanApi";
 import {
-  estimateRouteMinutes,
   makeDemoTicketOptions,
   recalculateDayTimeline,
   resolveTripSchedule,
@@ -255,425 +254,27 @@ const planEventKey = (event, dayIndex, eventIndex) =>
   event?.[6]?.id || `day-${dayIndex + 1}-stop-${eventIndex + 1}`;
 
 
-const hardPinnedEvent = (event) => {
-  const metadata = event?.[6] || {};
-  const type = String(metadata.type || "").toUpperCase();
-  const category = String(metadata.category || "").toUpperCase();
-  const name = String(event?.[2] || "");
-
-  return Boolean(metadata.isLocked)
-    || ["DEPARTURE", "AIRPORT", "FLIGHT", "ACCOMMODATION", "RENTAL", "RENT_CAR", "CAR_RENTAL", "RENTAL_CAR"].includes(type)
-    || /ARRIVAL_AIRPORT|DEPARTURE_AIRPORT|RENTAL|CHECK_IN|CHECK_OUT|DAY_START|DAY_END/.test(category)
-    || /공항|항공|렌터카|숙소|호텔|리조트/.test(name);
-};
-
 const applyPlanOrders = (plans, orders, localTransport) =>
   plans.map((day, dayIndex) => {
     const order = orders[dayIndex];
     if (!order?.length) return day;
 
-    const originalEvents = day[2] || [];
     const byId = new Map(
-      originalEvents.map((event, eventIndex) => [
-        planEventKey(event, dayIndex, eventIndex),
-        event,
-      ]),
+      day[2].map((event, eventIndex) => [planEventKey(event, dayIndex, eventIndex), event]),
     );
+    const ordered = order.map((id) => byId.get(id)).filter(Boolean);
+    const known = new Set(order);
 
-    const lockedSlots = new Set(
-      originalEvents.flatMap((event, index) =>
-        hardPinnedEvent(event) ? [index] : []),
-    );
-    const movableSlots = originalEvents.flatMap((event, index) =>
-      hardPinnedEvent(event) ? [] : [index]);
-
-    const requestedMovableIds = order.filter((id) => {
-      const event = byId.get(id);
-      return event && !hardPinnedEvent(event);
-    });
-
-    const originalMovableIds = movableSlots.map((index) =>
-      planEventKey(originalEvents[index], dayIndex, index));
-
-    const mergedMovableIds = [
-      ...requestedMovableIds,
-      ...originalMovableIds.filter((id) => !requestedMovableIds.includes(id)),
-    ];
-
-    const nextEvents = originalEvents.map((event, index) => {
-      if (lockedSlots.has(index)) return event;
-      const rank = movableSlots.indexOf(index);
-      return byId.get(mergedMovableIds[rank]) || event;
-    });
-
-    return recalculateDayTimeline(
-      [day[0], day[1], nextEvents],
-      localTransport,
-    );
+    return recalculateDayTimeline([
+      day[0],
+      day[1],
+      [
+        ...ordered,
+        ...day[2].filter((event, eventIndex) =>
+          !known.has(planEventKey(event, dayIndex, eventIndex))),
+      ],
+    ], localTransport);
   });
-
-const normalizeSchedulePlaceName = (value) =>
-  String(value || "")
-    .replace(/\s+/g, "")
-    .replace(/제주특별자치도|제주시|서귀포시/g, "")
-    .toLowerCase();
-
-const applyActualTravelTiming = (plans, routes, localTransport) =>
-  plans.map((day, dayIndex) => {
-    if (!Array.isArray(day?.[2]) || day[2].length < 2) return day;
-
-    const events = day[2].map((event) => [
-      ...event.slice(0, 6),
-      { ...(event[6] || {}) },
-    ]);
-
-    const segments = Array.isArray(routes?.[dayIndex]?.segments)
-      ? [...routes[dayIndex].segments].sort(
-          (a, b) => Number(a?.sequence ?? 0) - Number(b?.sequence ?? 0),
-        )
-      : [];
-
-    let segmentCursor = 0;
-
-    for (let index = 0; index < events.length - 1; index += 1) {
-      const current = events[index];
-      const next = events[index + 1];
-      const currentMeta = current[6] || {};
-      const nextMeta = next[6] || {};
-      const currentName = normalizeSchedulePlaceName(current[2]);
-      const nextName = normalizeSchedulePlaceName(next[2]);
-
-      let matched = null;
-
-      for (let segmentIndex = segmentCursor; segmentIndex < segments.length; segmentIndex += 1) {
-        const segment = segments[segmentIndex];
-        const fromName = normalizeSchedulePlaceName(segment?.departureName);
-        const toName = normalizeSchedulePlaceName(segment?.arrivalName);
-
-        const nextMatches =
-          Boolean(nextName) &&
-          (toName === nextName || toName.includes(nextName) || nextName.includes(toName));
-        const currentMatches =
-          !currentName ||
-          !fromName ||
-          fromName === currentName ||
-          fromName.includes(currentName) ||
-          currentName.includes(fromName);
-
-        if (nextMatches && currentMatches) {
-          matched = segment;
-          segmentCursor = segmentIndex + 1;
-          break;
-        }
-      }
-
-      const backendMinutes = Number(matched?.durationMinutes);
-      const coordinateMinutes = estimateRouteMinutes(
-        {
-          latitude: Number(currentMeta.latitude),
-          longitude: Number(currentMeta.longitude),
-        },
-        {
-          latitude: Number(nextMeta.latitude),
-          longitude: Number(nextMeta.longitude),
-        },
-        localTransport,
-      );
-
-      const travelMinutes =
-        Number.isFinite(backendMinutes) && backendMinutes > 0
-          ? Math.ceil(backendMinutes)
-          : Number.isFinite(coordinateMinutes) && coordinateMinutes > 0
-            ? Math.ceil(coordinateMinutes)
-            : Math.max(0, Number(current[5]) || 0);
-
-      current[5] = travelMinutes;
-      current[6] = {
-        ...currentMeta,
-        nextTravelMinutes: travelMinutes,
-        nextTravelDistanceKm:
-          Number.isFinite(Number(matched?.distanceKm))
-            ? Number(matched.distanceKm)
-            : null,
-        nextTravelMode: matched?.mode || localTransport || null,
-        nextTravelTo: next[2],
-        travelSource: matched ? "BACKEND_ROUTE" : "FRONTEND_DISTANCE_ESTIMATE",
-      };
-    }
-
-    return recalculateDayTimeline(
-      [day[0], day[1], events],
-      localTransport,
-    );
-  });
-
-const applyPlanLocalStructure = (plans, removedByDay, insertedByDay) =>
-  plans.map((day, dayIndex) => {
-    const removed = new Set(removedByDay[dayIndex] || []);
-    const insertions = insertedByDay[dayIndex] || [];
-
-    const source = (day[2] || []).filter((event, eventIndex) =>
-      !removed.has(planEventKey(event, dayIndex, eventIndex)));
-
-    const next = [];
-
-    source.forEach((event, eventIndex) => {
-      next.push(event);
-      const eventId = planEventKey(event, dayIndex, eventIndex);
-      insertions
-        .filter((entry) => entry.afterEventId === eventId)
-        .forEach((entry) => next.push(entry.event));
-    });
-
-    insertions
-      .filter((entry) => !source.some(
-        (event, eventIndex) =>
-          planEventKey(event, dayIndex, eventIndex) === entry.afterEventId,
-      ))
-      .forEach((entry) => next.push(entry.event));
-
-    return [day[0], day[1], next];
-  });
-
-const dinnerClockMinutes = (value, fallback = 18 * 60) => {
-  const match = String(value || "").match(/^(\d{2}):(\d{2})$/);
-  if (!match) return fallback;
-  return Number(match[1]) * 60 + Number(match[2]);
-};
-
-const dinnerClockFromMinutes = (value) => {
-  const safe = Math.max(0, Math.min(23 * 60 + 59, Math.round(value)));
-  return `${String(Math.floor(safe / 60)).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
-};
-
-const dinnerTupleDuration = (event) => {
-  const direct = Number(event?.[6]?.stayMinutes);
-  if (Number.isFinite(direct) && direct >= 0) return direct;
-  const parsed = Number.parseInt(String(event?.[4] || ""), 10);
-  return Number.isFinite(parsed) ? Math.max(0, parsed) : 60;
-};
-
-const isAccommodationTuple = (event) =>
-  String(event?.[6]?.type || "").toUpperCase() === "ACCOMMODATION"
-  || /숙소|호텔|리조트|펜션/.test(String(event?.[2] || ""));
-
-const isRealDinnerTuple = (event) => {
-  const type = String(event?.[6]?.type || "").toUpperCase();
-  const category = String(event?.[6]?.category || "").toUpperCase();
-  const name = String(event?.[2] || "");
-  const start = dinnerClockMinutes(event?.[0], -1);
-  return type === "RESTAURANT"
-    && !event?.[6]?.syntheticMeal
-    && (start >= 17 * 60 || /DINNER|EVENING_MEAL/.test(category) || /저녁/.test(name));
-};
-
-async function prefetchFirstDayDinnerRestaurant({
-  selectedStay,
-  themes,
-  foodPreferences,
-}) {
-  const originLatitude = Number(
-    selectedStay?.latitude
-    ?? selectedStay?.point?.latitude,
-  );
-  const originLongitude = Number(
-    selectedStay?.longitude
-    ?? selectedStay?.point?.longitude,
-  );
-
-  if (!Number.isFinite(originLatitude) || !Number.isFinite(originLongitude)) {
-    return null;
-  }
-
-  const preferences = (themes || [])
-    .map((theme) => THEME_MAP[theme])
-    .filter(Boolean)
-    .slice(0, 3);
-
-  const foods = (foodPreferences || [])
-    .map((food) => FOOD_PREFERENCE_MAP[food])
-    .filter(Boolean)
-    .slice(0, 3);
-
-  let restaurants = [];
-
-  try {
-    const response = await apiClient.request("/api/restaurants/recommend", {
-      method: "POST",
-      body: {
-        originLatitude,
-        originLongitude,
-        preferences,
-        foodPreferences: foods,
-        limit: 5,
-      },
-      timeoutMs: 15000,
-    });
-    restaurants = Array.isArray(response?.restaurants)
-      ? response.restaurants
-      : [];
-  } catch (error) {
-    console.warn("[DINNER] recommend API failed", error);
-  }
-
-  if (!restaurants.length) {
-    try {
-      const response = await apiClient.request("/api/restaurants/search", {
-        method: "POST",
-        body: {
-          originLatitude,
-          originLongitude,
-          foodPreferences: foods,
-          limit: 10,
-        },
-        timeoutMs: 15000,
-      });
-      restaurants = Array.isArray(response?.restaurants)
-        ? response.restaurants
-        : [];
-    } catch (error) {
-      console.warn("[DINNER] search API failed", error);
-    }
-  }
-
-  return restaurants[0] || null;
-}
-
-function applyPrefetchedFirstDayDinner({ plan, restaurant }) {
-  if (!plan?.dayPlans?.[0]?.[2]?.length) return plan;
-
-  const firstDay = plan.dayPlans[0];
-  let events = firstDay[2].filter((event) => !event?.[6]?.syntheticMeal);
-
-  const accommodationIndexes = events.flatMap((event, index) =>
-    isAccommodationTuple(event) ? [index] : []);
-
-  const returnAccommodationIndex =
-    accommodationIndexes.length >= 2
-      ? accommodationIndexes[accommodationIndexes.length - 1]
-      : -1;
-
-  let returnAccommodation =
-    returnAccommodationIndex >= 0
-      ? events[returnAccommodationIndex]
-      : null;
-
-  if (returnAccommodationIndex >= 0) {
-    events.splice(returnAccommodationIndex, 1);
-  }
-
-  let dinnerEvent = events.find(isRealDinnerTuple) || null;
-
-  if (!dinnerEvent && restaurant?.id && restaurant?.restaurantName) {
-    const menu =
-      (restaurant.menus || []).find((item) => item?.recommended)
-      || restaurant.menus?.[0]
-      || null;
-
-    const price = Number(menu?.currentPrice);
-
-    const lastMovable = [...events].reverse().find((event) =>
-      !hardPinnedEvent(event));
-
-    const lastEnd =
-      lastMovable
-        ? dinnerClockMinutes(lastMovable[0], 17 * 60)
-          + dinnerTupleDuration(lastMovable)
-          + Math.max(0, Number(lastMovable[5]) || 0)
-        : 18 * 60;
-
-    const dinnerStart = Math.max(18 * 60, Math.min(lastEnd, 20 * 60));
-    const date =
-      String(events[0]?.[6]?.startAt || "")
-        .match(/\d{4}-\d{2}-\d{2}/)?.[0]
-      || null;
-
-    const driveMinutes = Math.max(
-      5,
-      Number(restaurant.estimatedDriveMinutes) || 15,
-    );
-
-    dinnerEvent = [
-      dinnerClockFromMinutes(dinnerStart),
-      "🍽️",
-      restaurant.restaurantName,
-      restaurant.recommendationReason
-        || restaurant.summary
-        || "현재 동선과 선호 음식에 맞춰 실제 등록 식당을 추천했어요.",
-      "60분",
-      driveMinutes,
-      {
-        id: `restaurant-${restaurant.id}-day-1-dinner`,
-        type: "RESTAURANT",
-        category: "DINNER",
-        placeId: restaurant.id,
-        referenceId: restaurant.kakaoPlaceId || restaurant.id,
-        latitude: Number(restaurant.latitude),
-        longitude: Number(restaurant.longitude),
-        address: restaurant.roadAddress || restaurant.address || "",
-        representativeMenu: menu?.menuName || "",
-        pricePerPerson: Number.isFinite(price) ? price : null,
-        bookingUrl: restaurant.placeUrl || null,
-        bookingProvider: restaurant.placeUrl ? "Kakao" : "",
-        startAt: date ? `${date}T${dinnerClockFromMinutes(dinnerStart)}:00` : null,
-        endAt: date ? `${date}T${dinnerClockFromMinutes(dinnerStart + 60)}:00` : null,
-        stayMinutes: 60,
-        travelMinutes: driveMinutes,
-        isLocked: false,
-        realRestaurant: true,
-        estimated: {
-          startTime: true,
-          stayMinutes: false,
-          travelMinutes: true,
-          price: !Number.isFinite(price),
-        },
-      },
-    ];
-  }
-
-  if (dinnerEvent) {
-    events = events.filter((event) => event !== dinnerEvent);
-    events.push(dinnerEvent);
-
-    if (returnAccommodation) {
-      const returnStart =
-        dinnerClockMinutes(dinnerEvent[0], 18 * 60)
-        + dinnerTupleDuration(dinnerEvent)
-        + Math.max(10, Number(dinnerEvent?.[5]) || 15);
-
-      const metadata = returnAccommodation?.[6] || {};
-      const date =
-        String(metadata.startAt || dinnerEvent?.[6]?.startAt || "")
-          .match(/\d{4}-\d{2}-\d{2}/)?.[0]
-        || null;
-
-      const stayMinutes = dinnerTupleDuration(returnAccommodation);
-
-      returnAccommodation = [
-        ...returnAccommodation.slice(0, 6),
-        {
-          ...metadata,
-          startAt: date ? `${date}T${dinnerClockFromMinutes(returnStart)}:00` : metadata.startAt,
-          endAt: date ? `${date}T${dinnerClockFromMinutes(returnStart + stayMinutes)}:00` : metadata.endAt,
-          isLocked: true,
-          displayScheduleAdjusted: true,
-        },
-      ];
-      returnAccommodation[0] = dinnerClockFromMinutes(returnStart);
-      events.push(returnAccommodation);
-    }
-  } else if (returnAccommodation) {
-    events.push(returnAccommodation);
-  }
-
-  return {
-    ...plan,
-    dayPlans: [
-      [firstDay[0], firstDay[1], events],
-      ...plan.dayPlans.slice(1),
-    ],
-  };
-}
 
 
 const MAX_PREFERENCE_SELECTIONS =
@@ -2028,18 +1629,6 @@ function useTripPlanner() {
   ] =
     useState({});
 
-  const [
-    planRemovedIds,
-    setPlanRemovedIds,
-  ] =
-    useState({});
-
-  const [
-    planInsertedStops,
-    setPlanInsertedStops,
-  ] =
-    useState({});
-
 
   const [
     backendPlan,
@@ -2718,30 +2307,19 @@ function useTripPlanner() {
   const dayPlans =
     useMemo(
       () =>
-        applyActualTravelTiming(
-          applyPlanOrders(
-            applyPlanLocalStructure(
-              applyPlanEdits(
-                baseDayPlans,
-                planEdits,
-              ),
-              planRemovedIds,
-              planInsertedStops,
-            ),
-            planOrders,
-            localTransport,
+        applyPlanOrders(
+          applyPlanEdits(
+            baseDayPlans,
+            planEdits,
           ),
-          backendPlan?.routes || [],
+          planOrders,
           localTransport,
         ),
       [
         baseDayPlans,
         planEdits,
-        planRemovedIds,
-        planInsertedStops,
         planOrders,
         localTransport,
-        backendPlan,
       ],
     );
 
@@ -6665,112 +6243,12 @@ function useTripPlanner() {
     };
 
 
-
-  const removePlanStop = (dayIndex, eventId) => {
-    const events = dayPlans[dayIndex]?.[2] || [];
-    const target = events.find((event, eventIndex) =>
-      planEventKey(event, dayIndex, eventIndex) === eventId);
-
-    if (!target) return;
-
-    if (hardPinnedEvent(target)) {
-      notify("공항·항공·렌터카·숙소 같은 고정 일정은 삭제할 수 없어요.");
-      return;
-    }
-
-    setPlanRemovedIds((current) => ({
-      ...current,
-      [dayIndex]: [
-        ...new Set([...(current[dayIndex] || []), eventId]),
-      ],
-    }));
-    setPlanOrders((current) => ({
-      ...current,
-      [dayIndex]: (current[dayIndex] || []).filter((id) => id !== eventId),
-    }));
-    setPlanRevision((current) => current + 1);
-    notify("일정에서 해당 장소를 제외했어요.");
-  };
-
-  const addPlanStop = (dayIndex, afterEventId, place) => {
-    if (!place?.name) return;
-
-    const categoryText = String(
-      place.category || place.type || place.detail || "",
-    );
-
-    const type =
-      /식당|restaurant|맛집|음식/i.test(categoryText)
-        ? "RESTAURANT"
-        : /카페|cafe|coffee|디저트/i.test(categoryText)
-          ? "CAFE"
-          : "ATTRACTION";
-
-    const stayMinutes =
-      Math.max(
-        30,
-        Number.parseInt(String(place.duration || place.stayMinutes || "90"), 10) || 90,
-      );
-
-    const uniqueId =
-      `frontend-added-${dayIndex + 1}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-
-    const latitude = Number(
-      place.latitude ?? place.point?.latitude,
-    );
-    const longitude = Number(
-      place.longitude ?? place.point?.longitude,
-    );
-
-    const addedEvent = [
-      "09:00",
-      place.icon || (type === "RESTAURANT" ? "🍽️" : type === "CAFE" ? "☕" : "📍"),
-      place.name,
-      place.detail || place.address || "추가한 일정입니다.",
-      `${stayMinutes}분`,
-      Math.max(0, Number(place.travel) || Number(place.durationMinutes) || 20),
-      {
-        id: uniqueId,
-        type,
-        category: place.category || "USER_ADDED",
-        placeId: place.id ?? place.placeId ?? null,
-        referenceId: place.externalId ?? place.id ?? null,
-        latitude: Number.isFinite(latitude) ? latitude : null,
-        longitude: Number.isFinite(longitude) ? longitude : null,
-        address: place.address || "",
-        representativeMenu: place.representativeMenu || "",
-        stayMinutes,
-        travelMinutes: Math.max(0, Number(place.travel) || Number(place.durationMinutes) || 20),
-        pricePerPerson: Number.isFinite(Number(place.pricePerPerson))
-          ? Number(place.pricePerPerson)
-          : null,
-        bookingUrl: place.deepLink || place.bookingUrl || null,
-        isLocked: false,
-        userAdded: true,
-      },
-    ];
-
-    setPlanInsertedStops((current) => ({
-      ...current,
-      [dayIndex]: [
-        ...(current[dayIndex] || []),
-        {
-          afterEventId,
-          event: addedEvent,
-        },
-      ],
-    }));
-    setPlanRevision((current) => current + 1);
-    notify(`${place.name}을(를) 일정에 추가했어요.`);
-  };
-
-
   const reorderDayPlan = (dayIndex, sourceIndex, destinationIndex) => {
     const events = dayPlans[dayIndex]?.[2] || [];
     if (
       sourceIndex === destinationIndex ||
       !events[sourceIndex] ||
-      hardPinnedEvent(events[sourceIndex])
+      events[sourceIndex][6]?.isLocked
     ) {
       return;
     }
@@ -6778,7 +6256,7 @@ function useTripPlanner() {
     // 잠긴 공항/항공/렌터카/숙소는 자기 자신만 고정되는 카드가 아니라
     // 실제 이동 흐름을 지키는 경계(anchor)다. 자유 일정은 이 경계를 넘을 수 없다.
     const lockedIndexes = events.flatMap((event, index) =>
-      hardPinnedEvent(event) ? [index] : []);
+      event[6]?.isLocked ? [index] : []);
     const previousLocked = [...lockedIndexes].reverse().find((index) => index < sourceIndex);
     const nextLocked = lockedIndexes.find((index) => index > sourceIndex);
     const segmentStart = previousLocked == null ? 0 : previousLocked + 1;
@@ -6794,7 +6272,7 @@ function useTripPlanner() {
     }
 
     const movableSlots = events.flatMap((event, index) =>
-      !hardPinnedEvent(event) && index >= segmentStart && index <= segmentEnd ? [index] : []);
+      !event[6]?.isLocked && index >= segmentStart && index <= segmentEnd ? [index] : []);
     const sourceRank = movableSlots.indexOf(sourceIndex);
     if (sourceRank < 0 || movableSlots.length < 2) return;
 
@@ -7421,27 +6899,10 @@ function useTripPlanner() {
      * ========================================
      */
 
-    const dinnerRestaurantPromise =
-      prefetchFirstDayDinnerRestaurant({
-        selectedStay: effectiveStay,
-        themes,
-        foodPreferences,
-      }).catch((error) => {
-        console.warn("[DINNER] prefetch failed", error);
-        return null;
-      });
-
-    const [generatedPlan, dinnerRestaurant] =
-      await Promise.all([
-        requestTripPlan(tripId),
-        dinnerRestaurantPromise,
-      ]);
-
-    let nextBackendPlan =
-      applyPrefetchedFirstDayDinner({
-        plan: generatedPlan,
-        restaurant: dinnerRestaurant,
-      });
+    const nextBackendPlan =
+      await requestTripPlan(
+        tripId,
+      );
 
 
     /*
@@ -7490,9 +6951,6 @@ function useTripPlanner() {
     setPlanEdits(
       {},
     );
-
-    setPlanRemovedIds({});
-    setPlanInsertedStops({});
 
 
     if (
@@ -8029,9 +7487,6 @@ function useTripPlanner() {
     openIndependentBooking,
 
     changePlanStop,
-
-    addPlanStop,
-    removePlanStop,
 
     reorderDayPlan,
 

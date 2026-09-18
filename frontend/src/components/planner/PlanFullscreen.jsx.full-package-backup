@@ -230,17 +230,6 @@ function PlanFullscreen({
       setRouteResult(update);
     }, 1900);
   };
-
-  const isHardPinnedStop = (metadata = {}, name = "") => {
-    const type = String(metadata.type || "").toUpperCase();
-    const category = String(metadata.category || "").toUpperCase();
-
-    return Boolean(metadata.isLocked)
-      || ["DEPARTURE", "AIRPORT", "FLIGHT", "ACCOMMODATION", "RENTAL", "RENT_CAR", "CAR_RENTAL", "RENTAL_CAR"].includes(type)
-      || /ARRIVAL_AIRPORT|DEPARTURE_AIRPORT|RENTAL|CHECK_IN|CHECK_OUT|DAY_START|DAY_END/.test(category)
-      || /공항|항공|렌터카|숙소|호텔|리조트/.test(String(name || ""));
-  };
-
   const handleDragEnd = ({ source, destination }) => {
     if (!destination || source.index === destination.index || orderRecalculating) return;
     setOrderRecalculating(true);
@@ -491,7 +480,6 @@ function PlanFullscreen({
                   : price
                     ? `${approximate ? "약 " : ""}1인 ${money(price)}원`
                     : "";
-                const isHardPinned = isHardPinnedStop(metadata, name);
                 const displayTime = eventClock(time, metadata);
                 const displayStay = isArrivalAirport && !(metadata.stayMinutes > 0) ? "도착" : stay;
                 const isCafe = backendPlaceType === "CAFE"
@@ -516,26 +504,19 @@ function PlanFullscreen({
                     key={eventId}
                     draggableId={eventId}
                     index={index}
-                    isDragDisabled={isHardPinned}
+                    isDragDisabled={Boolean(metadata.isLocked)}
                   >
                   {(dragProvided, dragSnapshot) => (
                   <article
                     ref={dragProvided.innerRef}
                     {...dragProvided.draggableProps}
-                    {...(!isHardPinned ? dragProvided.dragHandleProps : {})}
+                    {...(!metadata.isLocked ? dragProvided.dragHandleProps : {})}
                     style={{
                       ...dragProvided.draggableProps.style,
-                      ...(!isHardPinned ? dragProvided.dragHandleProps?.style : {}),
-                      ...(isHardPinned
-                        ? {
-                            transform: "none",
-                            transition: "none",
-                            zIndex: 2,
-                          }
-                        : {}),
-                      cursor: isHardPinned ? "default" : undefined,
+                      ...(!metadata.isLocked ? dragProvided.dragHandleProps?.style : {}),
+                      cursor: metadata.isLocked ? "default" : undefined,
                     }}
-                    className={`itinerary-stop${isHardPinned ? " is-pinned" : " is-draggable"}${dragSnapshot.isDragging ? " is-dragging" : ""}`}
+                    className={`itinerary-stop${metadata.isLocked ? "" : " is-draggable"}${dragSnapshot.isDragging ? " is-dragging" : ""}`}
                   >
                     <time>{displayTime}</time>
                     <span>{icon}</span>
@@ -601,7 +582,7 @@ function PlanFullscreen({
                         </div>
                       )}
                       <p>{detail}</p>
-                      {!isHardPinned ? <button
+                      {!metadata.isLocked ? <button
                         type="button"
                         className="stop-change"
                         onClick={(event) => {
