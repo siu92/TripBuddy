@@ -1,0 +1,40 @@
+.preference-step-modal { width:min(820px,calc(100vw - 34px)); padding:28px 31px 25px; overflow-x:hidden; font-family:Pretendard,'Noto Sans KR',sans-serif; }
+.preference-step-header { padding-right:42px; }
+.preference-step-header > p { margin:0; color:#13766f; font:750 10px/1.2 Inter,sans-serif; letter-spacing:.1em; }
+.preference-step-header h3 { margin:14px 0 8px; color:#173f3c; font-size:30px; line-height:1.16; letter-spacing:-.055em; }
+.preference-step-header > span { display:block; color:#6e8580; font-size:11px; line-height:1.6; }
+.preference-step-progress { display:flex; gap:23px; position:absolute; top:29px; right:74px; }
+.preference-step-progress > span { display:flex; align-items:center; gap:7px; color:#98a7a3; }
+.preference-step-progress i { display:grid; width:22px; height:22px; place-items:center; border:1px solid #d7e2de; border-radius:50%; background:#fff; font:700 10px/1 Inter,sans-serif; font-style:normal; }
+.preference-step-progress b { font-size:10px; font-weight:650; }
+.preference-step-progress > span.active { color:#126f68; }
+.preference-step-progress > span.active i { border-color:#8abbb2; background:#eaf5f1; }
+.preference-step-content { min-height:337px; }
+.preference-step-modal .preference-modal-group { margin-top:19px; }
+.preference-step-modal .preference-modal-themes button { min-height:108px; }
+.preference-step-modal .preference-modal-themes img { height:108px; }
+.preference-pace-group { padding-block:14px !important; }
+.food-card-step { margin-top:20px; min-height:400px; }
+.food-image-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.food-image-grid > button { position:relative; min-height:121px; overflow:hidden; padding:0; border:1px solid #d8e2df; border-radius:13px; background:#173f3c; text-align:left; isolation:isolate; transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+.food-image-grid > button::after { position:absolute; z-index:1; inset:0; background:linear-gradient(180deg,rgba(8,26,25,.05) 18%,rgba(7,28,27,.86) 100%); content:""; }
+.food-image-grid > button:hover { border-color:#78aaa1; box-shadow:0 9px 19px rgba(20,62,57,.15); transform:translateY(-2px); }
+.food-image-grid > button.active { border-color:#fff; box-shadow:0 0 0 3px #16877c,0 10px 22px rgba(17,91,83,.2); }
+.food-image-grid > button:disabled,.preference-step-modal .preference-modal-themes button:disabled { cursor:not-allowed; filter:grayscale(.35); opacity:.48; transform:none; }
+.food-image-grid img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .3s ease; }
+.food-image-grid button:hover img { transform:scale(1.035); }
+.food-card-copy { position:absolute; z-index:2; right:13px; bottom:12px; left:13px; display:grid; gap:3px; color:#fff; text-shadow:0 1px 5px rgba(0,0,0,.5); }
+.food-card-copy b { font-size:14px; font-weight:800; letter-spacing:-.025em; }
+.food-card-copy small { color:rgba(255,255,255,.82); font-size:9px; font-weight:550; }
+.food-card-check { position:absolute; z-index:3; top:10px; right:10px; display:grid; width:25px; height:25px; place-items:center; border:1px solid rgba(255,255,255,.8); border-radius:50%; background:#0d7e75; color:#fff; font-style:normal; box-shadow:0 4px 10px rgba(0,0,0,.2); }
+.preference-step-actions { display:flex; align-items:stretch; gap:9px; margin-top:18px; }
+.preference-step-actions .preference-confirm { display:flex; flex:1; align-items:center; justify-content:center; gap:7px; margin:0; min-height:48px; }
+.preference-previous { display:flex; min-width:102px; align-items:center; justify-content:center; gap:6px; border:1px solid #cbded9; border-radius:10px; background:#fff; color:#426d66; font-size:12px; font-weight:750; }
+.preference-previous:hover { border-color:#8bbab1; background:#f4faf8; }
+@media(max-width:760px){
+  .preference-step-modal{padding:24px 16px 18px}.preference-step-header{padding-right:32px}.preference-step-header h3{font-size:25px}
+  .preference-step-progress{position:static;margin-top:13px}.preference-step-progress b{display:none}
+  .food-image-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.food-image-grid>button{min-height:112px}.food-card-step{min-height:0}
+  .preference-step-actions{position:sticky;bottom:-18px;z-index:4;padding:10px 0 18px;background:linear-gradient(180deg,rgba(255,254,251,0),#fffefb 18%)}
+  .preference-step-actions .preference-confirm{font-size:11px}.preference-previous{min-width:86px}
+}

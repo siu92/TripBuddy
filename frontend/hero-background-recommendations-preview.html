@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>얼마길 | 히어로 배경 이미지 추천 미리보기</title>
+  <style>
+    :root { color-scheme: dark; --ink: #eaf3f1; --muted: #98afa9; --line: rgba(219, 239, 232, .17); --card: #123c3d; --teal: #008d85; --orange: #ff8a4c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(circle at 18% -10%, #174f51 0, #071c25 44%, #06151d 100%); color: var(--ink); font-family: Pretendard, "Noto Sans KR", Arial, sans-serif; }
+    .page { width: min(1500px, calc(100% - 48px)); margin: 0 auto; padding: 45px 0 70px; }
+    .top { display: flex; align-items: end; justify-content: space-between; gap: 30px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .brand { display: inline-flex; align-items: center; gap: 10px; color: #fffdf8; font-weight: 900; font-size: 19px; text-decoration: none; }
+    .brand i { position: relative; width: 27px; height: 29px; border: 3px solid #eef4ed; border-bottom: 0; border-radius: 11px 11px 2px 2px; }
+    .brand i::before { position: absolute; right: -4px; bottom: 1px; width: 7px; height: 7px; border: 2px solid var(--orange); border-radius: 50%; background: #113d3e; content: ''; }
+    .brand i::after { position: absolute; left: 8px; top: 7px; width: 7px; height: 7px; border: 2px solid #8cd4c9; border-radius: 50%; content: ''; }
+    .eyebrow { margin: 0 0 10px; color: #81d7c7; font: 800 11px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; }
+    h1 { margin: 0; color: #fff; font-size: clamp(28px, 4.2vw, 50px); letter-spacing: -3px; line-height: 1.13; }
+    .intro { max-width: 400px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .guide { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin: 26px 0 22px; color: #b7cbc6; font-size: 13px; }
+    .guide b { color: #fff; }
+    .guide span { display: inline-flex; align-items: center; min-height: 30px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.035); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+    .candidate { overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: rgba(12, 41, 44, .82); box-shadow: 0 20px 45px rgba(0,0,0,.16); transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+    .candidate:hover { transform: translateY(-4px); border-color: rgba(135, 224, 203, .62); box-shadow: 0 26px 55px rgba(0,0,0,.27); }
+    .candidate.selected { border-color: var(--orange); box-shadow: 0 0 0 2px rgba(255,138,76,.18), 0 26px 55px rgba(0,0,0,.27); }
+    .preview { position: relative; min-height: 318px; isolation: isolate; background-position: center; background-size: cover; }
+    .preview::after { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, rgba(4,31,38,.88) 0%, rgba(6,39,45,.64) 40%, rgba(5,25,31,.08) 76%, rgba(5,25,31,.10) 100%); content: ''; }
+    .copy { display: flex; position: relative; z-index: 1; flex-direction: column; align-items: flex-start; justify-content: center; min-height: 318px; max-width: 65%; padding: 38px; }
+    .number { display: inline-flex; align-items: center; min-height: 24px; margin-bottom: 17px; padding: 4px 9px; border: 1px solid rgba(255,255,255,.26); border-radius: 999px; color: #fff; background: rgba(0,0,0,.14); font: 800 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; }
+    .copy h2 { margin: 0; color: #fff; font-size: clamp(24px, 2.3vw, 35px); letter-spacing: -2.6px; line-height: 1.22; text-shadow: 0 2px 14px rgba(0,0,0,.3); }
+    .copy h2 em { color: #eff8df; font-style: italic; }
+    .copy p { margin: 16px 0 0; color: rgba(255,255,255,.91); font-size: 13px; font-weight: 600; line-height: 1.6; }
+    .info { display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: center; padding: 18px 20px; }
+    .info p { margin: 0; color: #b9cdc7; font-size: 12px; line-height: 1.55; }
+    .info p b { display: block; margin-bottom: 3px; color: #fff; font-size: 15px; }
+    .select { min-width: 98px; height: 38px; border: 1px solid #519b91; border-radius: 9px; color: #d8f7ee; background: transparent; font: 800 12px/1 Pretendard, sans-serif; cursor: pointer; transition: background .18s, color .18s; }
+    .select:hover, .candidate.selected .select { border-color: var(--orange); color: #1b3533; background: #ffb06a; }
+    .footer { margin-top: 26px; color: #76928c; font-size: 12px; line-height: 1.65; }
+    @media (max-width: 900px) { .top { align-items: flex-start; flex-direction: column; } .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .page { width: min(100% - 28px, 1500px); padding-top: 28px; } h1 { letter-spacing: -2px; } .preview, .copy { min-height: 285px; } .copy { max-width: 78%; padding: 27px; } .info { grid-template-columns: 1fr; } .select { width: 100%; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="top">
+      <div>
+        <a class="brand" href="/" aria-label="얼마길 메인으로"><i aria-hidden="true"></i>얼마길</a>
+        <p class="eyebrow" style="margin-top:26px">HERO IMAGE SHORTLIST · PREVIEW</p>
+        <h1>얼마길 메인 배경<br />추천 10선</h1>
+      </div>
+      <p class="intro">실제 메인 히어로의 문구·텍스트 배치·좌측 그라데이션을 그대로 적용한 비교 화면입니다. 카드를 눌러 선택 표시도 확인해 보세요.</p>
+    </header>
+    <div class="guide"><b>비교 기준</b><span>좌측 텍스트 가독성</span><span>밝고 비비드한 여행 감성</span><span>PC 와이드 화면 비율</span></div>
+    <section class="grid" id="grid" aria-label="히어로 배경 후보"></section>
+    <p class="footer">이미지는 Unsplash 외부 이미지 URL을 활용한 발표용 미리보기입니다. 실제 서비스 적용 전에는 라이선스 및 사용 조건을 확인해 주세요.</p>
+  </main>
+  <script>
+    const candidates = [
+      ['01', '그리스 산토리니', '압도적인 청량함과 휴양지 감성', '지중해 에메랄드빛 바다와 하얀 건축물의 대비', 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1800&q=88'],
+      ['02', '이탈리아 포지타노', '파스텔 색감과 채도 높은 오션뷰', '절벽 해안 마을의 다채로운 건물과 바다', 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1800&q=88'],
+      ['03', '튀르키예 카파도키아', '여행의 로망과 AI 테크 감성', '노을빛 하늘을 수놓은 열기구 풍경', 'https://images.unsplash.com/photo-1527838832700-5059252407fa?auto=format&fit=crop&w=1800&q=88'],
+      ['04', '스위스 라우터브루넨', '시원한 폭포와 초록빛 자연', '웅장한 폭포와 녹음의 초원 마을', 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1800&q=88'],
+      ['05', '캐나다 레이크 루이스', '현실감 넘치는 대자연', '밀키블루 빙하호수와 산맥의 조화', 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1800&q=88'],
+      ['06', '일본 교토 전통 거리', '길(Route) 콘셉트와 직관적 연결', '강렬한 주황빛 도리이와 동양의 길', 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1800&q=88'],
+      ['07', '인도네시아 발리', '쨍한 힐링 컬러감', '에메랄드 라이스 테라스와 야자수', 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1800&q=88'],
+      ['08', '몰디브 오버워터', '최고급 휴양과 여름 마케팅', '투명한 바다와 화사한 해변 산책로', 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1800&q=88'],
+      ['09', '이탈리아 베네치아', '유럽 도시·식도락·문화 여행', '에메랄드 물길을 따라 이어지는 도시', 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=1800&q=88'],
+      ['10', '대한민국 제주도 해안', '국내 1위 여행지의 대표성', '유채꽃과 현무암, 청량한 제주 바다', 'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=1800&q=88']
+    ]
+    const grid = document.querySelector('#grid')
+    grid.innerHTML = candidates.map(([number, title, feature, detail, image]) => `
+      <article class="candidate" data-title="${title}">
+        <div class="preview" style="background-image:url('${image}')">
+          <div class="copy">
+            <span class="number">${number} · ${title}</span>
+            <h2>내 예산에 딱 맞춘<br /><em>단 하나의 길, 얼마길.</em></h2>
+            <p>${detail}</p>
+          </div>
+        </div>
+        <footer class="info"><p><b>${title}</b>${feature}</p><button class="select" type="button">후보 선택</button></footer>
+      </article>
+    `).join('')
+    grid.addEventListener('click', (event) => {
+      const button = event.target.closest('.select')
+      if (!button) return
+      document.querySelectorAll('.candidate').forEach((card) => { card.classList.remove('selected'); card.querySelector('.select').textContent = '후보 선택' })
+      const card = button.closest('.candidate')
+      card.classList.add('selected')
+      button.textContent = '선택됨 ✓'
+    })
+  </script>
+</body>
+</html>

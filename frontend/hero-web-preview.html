@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>얼마길 | 히어로 배경 후보</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root { color: #073d43; background: #f4f6f0; font-family: 'Noto Sans KR', sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      header { padding: 54px max(28px, calc((100vw - 1240px) / 2)); background: linear-gradient(120deg, #073f43, #087b76); color: white; }
+      .eyebrow { margin: 0 0 12px; color: #ffc55b; font: 500 11px/1 'DM Mono', monospace; letter-spacing: .16em; }
+      h1 { margin: 0; font-size: clamp(30px, 4vw, 49px); line-height: 1.2; letter-spacing: -2.5px; }
+      header p:last-child { max-width: 710px; margin: 17px 0 0; color: rgba(255,255,255,.78); font-size: 14px; line-height: 1.7; }
+      main { width: min(1240px, calc(100% - 40px)); margin: 42px auto 72px; }
+      .note { margin: 0 0 25px; color: #5e7979; font-size: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+      .card { overflow: hidden; border: 1px solid #d8e5df; border-radius: 22px; background: white; box-shadow: 0 12px 30px rgba(6, 62, 60, .07); }
+      .visual { position: relative; aspect-ratio: 21 / 9; overflow: hidden; background: #d9e8e4; }
+      .visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,36,39,.48), rgba(0,36,39,.12) 48%, transparent 75%); pointer-events: none; }
+      .visual img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; }
+      .hero-caption { position: absolute; z-index: 1; top: 50%; left: clamp(18px, 4vw, 42px); width: 56%; transform: translateY(-50%); color: white; text-shadow: 0 2px 18px rgba(0, 27, 29, .4); }
+      .hero-caption span { display: block; margin-bottom: 8px; color: #ffd376; font: 500 clamp(7px, .9vw, 10px)/1 'DM Mono', monospace; letter-spacing: .15em; }
+      .hero-caption strong { display: block; font-size: clamp(14px, 1.9vw, 25px); line-height: 1.25; letter-spacing: -1.4px; }
+      .copy { padding: 18px 20px 20px; }
+      .number { color: #ec7e42; font: 500 11px/1 'DM Mono', monospace; letter-spacing: .13em; }
+      h2 { margin: 8px 0 6px; font-size: 20px; letter-spacing: -1px; }
+      .copy p { min-height: 41px; margin: 0; color: #668080; font-size: 13px; line-height: 1.65; }
+      a { display: inline-block; margin-top: 14px; color: #087b76; font-size: 12px; font-weight: 700; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      @media (max-width: 720px) { header { padding: 42px 22px; } main { width: min(100% - 28px, 620px); margin-top: 28px; } .grid { grid-template-columns: 1fr; gap: 16px; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">EOLMAGIL / WEB IMAGE SHORTLIST</p>
+      <h1>밝고 설레는 여행의 시작,<br />다른 결의 히어로 후보 7장</h1>
+      <p>모두 가로형 배너에 맞춘 실제 여행 이미지입니다. 적용 때에는 좌측 텍스트 영역에만 은은한 다크 그라데이션을 얹어, 사진의 청량함과 문구 가독성을 함께 지킵니다.</p>
+    </header>
+    <main>
+      <p class="note">현재 메인에는 선택하신 지중해형 생성 이미지가 적용되어 있습니다. 아래는 그와 다른 콘셉트의 웹 이미지 후보입니다.</p>
+      <section class="grid">
+        <article class="card"><div class="visual"><img src="https://images.unsplash.com/photo-1688565477363-5793967d09dd?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=85&w=2400" alt="열대 해안도로" /><div class="hero-caption"><span>YOUR BUDGET, YOUR ROUTE</span><strong>내 예산에 딱 맞춘<br />단 하나의 길, 얼마길!</strong></div></div><div class="copy"><span class="number">01 / TROPICAL ROUTE</span><h2>청량한 열대 해안도로</h2><p>맑은 바다와 하늘, 굽이진 길이 ‘얼마길’의 Route 감각을 가장 직접적으로 보여주는 안입니다.</p><a href="https://unsplash.com/@awenkco" target="_blank" rel="noreferrer">원본 출처 보기 ↗</a></div></article>
+        <article class="card"><div class="visual"><img src="https://yourtravelscout.asia/wp-content/uploads/2023/09/beautiful-shot-beach-road-with-cloudy-blue-sky-background-1-scaled.jpg" alt="야자수가 있는 해안도로" /><div class="hero-caption"><span>YOUR BUDGET, YOUR ROUTE</span><strong>내 예산에 딱 맞춘<br />단 하나의 길, 얼마길!</strong></div></div><div class="copy"><span class="number">02 / PALM ESCAPE</span><h2>야자수 아래의 휴양지 드라이브</h2><p>야자수와 짙은 푸른 바다가 주는 대중적인 휴양지 무드. 가장 화사하고 친근한 인상입니다.</p><a href="https://yourtravelscout.asia/road-tripping-scenic-routes-and-drives-in-sri-lanka/" target="_blank" rel="noreferrer">원본 출처 보기 ↗</a></div></article>
+        <article class="card"><div class="visual"><img src="https://blog.lambus-app.com/wp-content/uploads/2023/08/Amalfi-Coast.png" alt="아말피 해안도로" /><div class="hero-caption"><span>YOUR BUDGET, YOUR ROUTE</span><strong>내 예산에 딱 맞춘<br />단 하나의 길, 얼마길!</strong></div></div><div class="copy"><span class="number">03 / AMALFI SUMMER</span><h2>따뜻한 아말피 해안</h2><p>풍부한 햇빛과 남유럽의 온기가 포인트 컬러와 어우러지는, 감성 여행 플랫폼형 배너입니다.</p><a href="https://www.lambus.com/blog/2023/10/06/scenic-routes-discovering-the-most-picturesque-drives-in-the-world" target="_blank" rel="noreferrer">원본 출처 보기 ↗</a></div></article>
+        <article class="card"><div class="visual"><img src="https://images.unsplash.com/photo-1596716113965-14a07350eb49?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=85&w=2400" alt="스위스 알프스 도로" /><div class="hero-caption"><span>YOUR BUDGET, YOUR ROUTE</span><strong>내 예산에 딱 맞춘<br />단 하나의 길, 얼마길!</strong></div></div><div class="copy"><span class="number">04 / ALPINE ROUTE</span><h2>초록 알프스와 여유로운 길</h2><p>바다 대신 자연과 드라이브의 설렘을 강조하는 안. 국내·해외를 아우르는 플랫폼 정체성과도 잘 맞습니다.</p><a href="https://unsplash.com/photos/green-mountains-under-blue-sky-during-daytime-BPqBaNfgsds" target="_blank" rel="noreferrer">원본 출처 보기 ↗</a></div></article>
+        <article class="card"><div class="visual"><img src="https://images.unsplash.com/photo-1727946165405-75798c365e69?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=85&w=2400" alt="안개 낀 산길" /><div class="hero-caption"><span>YOUR BUDGET, YOUR ROUTE</span><strong>내 예산에 딱 맞춘<br />단 하나의 길, 얼마길!</strong></div></div><div class="copy"><span class="number">05 / MISTY TRAIL</span><h2>안개 낀 숲길과 산맥</h2><p>차분한 힐링과 모험을 동시에 전하는 프리미엄 자연 여행 콘셉트입니다.</p><a href="https://unsplash.com/photos/a-path-leading-to-a-mountain-with-trees-and-mountains-in-the-background-_UbnxRnr2GA" target="_blank" rel="noreferrer">원본 출처 보기 ↗</a></div></article>
+        <article class="card"><div class="visual"><img src="https://images.unsplash.com/photo-1650701272219-aa9f355ff6e5?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=85&w=2400" alt="노을의 유럽 구시가지" /><div class="hero-caption"><span>YOUR BUDGET, YOUR ROUTE</span><strong>내 예산에 딱 맞춘<br />단 하나의 길, 얼마길!</strong></div></div><div class="copy"><span class="number">06 / TWILIGHT CITY</span><h2>노을빛 유럽 구시가지</h2><p>오렌지 포인트 로고와 가장 자연스럽게 연결되는 도시 여행형 배너입니다.</p><a href="https://unsplash.com/s/photos/tallinn-old-city" target="_blank" rel="noreferrer">원본 출처 보기 ↗</a></div></article>
+        <article class="card"><div class="visual"><img src="https://wallpapercat.com/w/full/1/a/3/695587-2376x1584-desktop-hd-salar-de-uyuni-bolivia-background.jpg" alt="우유니 소금사막" /><div class="hero-caption"><span>YOUR BUDGET, YOUR ROUTE</span><strong>내 예산에 딱 맞춘<br />단 하나의 길, 얼마길!</strong></div></div><div class="copy"><span class="number">07 / OPEN HORIZON</span><h2>우유니의 광활한 지평선</h2><p>여백이 넓어 메인 카피를 가장 강하게 보여줄 수 있는 미니멀·프리미엄 콘셉트입니다.</p><a href="https://wallpapercat.com/salar-de-uyuni-bolivia-wallpapers" target="_blank" rel="noreferrer">원본 출처 보기 ↗</a></div></article>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>얼마길 · 브랜드 미리보기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;700&family=Noto+Sans+KR:wght@500;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root { --ink: #123f43; --sea: #087b74; --mint: #e8f7ef; --orange: #ed7740; --paper: #fbfaf4; }
+      * { box-sizing: border-box; } body { margin: 0; background: #f3f6f2; color: var(--ink); font-family: 'Noto Sans KR', sans-serif; }
+      main { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 64px 0 82px; }
+      .eyebrow { margin: 0 0 10px; color: #16877c; font: 700 11px 'DM Mono', monospace; letter-spacing: 1.1px; }
+      h1 { margin: 0; font-size: clamp(32px, 4vw, 48px); line-height: 1.12; letter-spacing: -3px; } .lead { max-width: 620px; margin: 17px 0 42px; color: #66827b; font-size: 14px; line-height: 1.75; }
+      h2 { margin: 58px 0 16px; font-size: 22px; letter-spacing: -1.5px; } .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .logo-card { padding: 25px; border: 1px solid #d9e7e0; border-radius: 17px; background: #fffefb; box-shadow: 0 12px 27px rgba(23, 76, 70, .06); }
+      .mark-preview { display: grid; height: 188px; place-items: center; margin-bottom: 20px; border-radius: 12px; background: linear-gradient(135deg, #eef8f2, #fff6ef); }
+      .mark-preview svg { width: 118px; height: 118px; overflow: visible; } .logo-name { display: flex; align-items: center; gap: 9px; font-size: 23px; font-weight: 800; letter-spacing: -1.8px; }.logo-name i { width: 18px; height: 18px; border-radius: 6px; background: var(--sea); }.logo-card h3 { margin: 17px 0 6px; font-size: 15px; }.logo-card p { min-height: 51px; margin: 0; color: #6d8781; font-size: 12px; line-height: 1.6; }
+      .hero-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }.hero-card { position: relative; min-height: 380px; overflow: hidden; border-radius: 18px; background: #153f42 url('/src/assets/jeju-main-hero.jpeg') center 60% / cover no-repeat; box-shadow: 0 16px 30px rgba(15, 65, 59, .12); }.hero-card::before { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4, 35, 38, .88), rgba(3, 50, 51, .51) 53%, rgba(3, 30, 30, .08)); content: ''; }.hero-content { position: absolute; z-index: 1; inset: auto 36px 37px; color: #fffdfa; }.hero-content small { color: #ace8dc; font: 700 10px 'DM Mono', monospace; letter-spacing: .7px; }.hero-content h3 { margin: 12px 0; font-size: clamp(27px, 3vw, 39px); line-height: 1.18; letter-spacing: -2.6px; }.hero-content h3 em { color: #ffbc91; font-style: normal; }.hero-content p { margin: 0; color: #e2f4ee; font-size: 12px; line-height: 1.6; }
+      .background-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }.background-card { position: relative; min-height: 310px; overflow: hidden; border-radius: 18px; background: var(--photo) center / cover no-repeat; box-shadow: 0 16px 30px rgba(15, 65, 59, .12); }.background-card::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(2, 28, 31, .78), rgba(2, 45, 44, .43) 52%, rgba(2, 28, 29, .15)); content: ''; }.background-card > div { position: absolute; z-index: 1; right: 29px; bottom: 27px; left: 29px; color: #fff; }.background-card small { color: #b9eadc; font: 700 10px 'DM Mono', monospace; letter-spacing: .8px; }.background-card h3 { margin: 9px 0 7px; font-size: 25px; letter-spacing: -1.8px; }.background-card p { margin: 0; color: #e0f1eb; font-size: 11px; line-height: 1.5; }.background-card em { position: absolute; top: 20px; left: 22px; padding: 7px 9px; border: 1px solid rgba(255,255,255,.45); border-radius: 99px; color: #fff; font: 700 9px 'DM Mono', monospace; font-style: normal; letter-spacing: .5px; }
+      .back { display: inline-flex; margin-top: 45px; padding: 11px 15px; border: 1px solid #9bcfc2; border-radius: 8px; color: #176e66; font-size: 12px; font-weight: 700; text-decoration: none; }
+      @media (max-width: 760px) { main { width: min(100% - 30px, 600px); padding-top: 42px; }.cards, .hero-grid, .background-grid { grid-template-columns: 1fr; }.logo-card p { min-height: 0; }.hero-card { min-height: 340px; }.hero-content { right: 26px; bottom: 28px; left: 26px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">EOLMAGIL · BRAND EXPLORATION</p>
+      <h1>얼마길 브랜드 후보</h1>
+      <p class="lead">아래는 현재 사이트에 적용하지 않은 비교용 시안입니다. 심볼의 인상과 메인 배경 문구를 한 화면에서 보고 선택할 수 있도록 구성했습니다.</p>
+
+      <h2>1. 로고 심볼 3안</h2>
+      <section class="cards">
+        <article class="logo-card">
+          <div class="mark-preview">
+            <svg viewBox="0 0 128 128" aria-label="경로와 가격 태그 로고">
+              <path d="M17 92C29 68 46 66 58 78S84 102 110 72" fill="none" stroke="#087b74" stroke-width="10" stroke-linecap="round" stroke-dasharray="3 13"/>
+              <path d="M71 18h32l13 13v32L87 92 58 63V31z" fill="#ee7740" stroke="#c9542d" stroke-width="3" stroke-linejoin="round"/>
+              <circle cx="96" cy="39" r="7" fill="#fff9f2"/>
+              <path d="M17 92C29 68 46 66 58 78" fill="none" stroke="#143f43" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="logo-name"><i></i>얼마길</div>
+          <h3>경로 + 가격 태그</h3>
+          <p>여행 동선을 따라 합리적인 가격을 발견하는 모습을 직관적으로 보여주는 안입니다.</p>
+        </article>
+        <article class="logo-card">
+          <div class="mark-preview">
+            <svg viewBox="0 0 128 128" aria-label="스마트 나침반 로고">
+              <circle cx="64" cy="64" r="46" fill="#edf8f2" stroke="#087b74" stroke-width="7"/>
+              <path d="m84 38-12 28-28 12 12-28z" fill="#ee7740" stroke="#c9542d" stroke-width="3" stroke-linejoin="round"/>
+              <path d="m44 78 12-28 28-12-12 28z" fill="#087b74"/>
+              <circle cx="94" cy="94" r="23" fill="#fff8e8" stroke="#e5a43d" stroke-width="4"/>
+              <text x="94" y="101" text-anchor="middle" fill="#c47b17" font-family="DM Mono, monospace" font-size="22" font-weight="700">₩</text>
+            </svg>
+          </div>
+          <div class="logo-name"><i></i>얼마길</div>
+          <h3>스마트 나침반</h3>
+          <p>예산과 동선의 방향을 정확하게 안내한다는 신뢰감에 가장 초점을 둔 안입니다.</p>
+        </article>
+        <article class="logo-card">
+          <div class="mark-preview">
+            <svg viewBox="0 0 128 128" aria-label="얼마길 모노그램 로고">
+              <circle cx="41" cy="64" r="26" fill="none" stroke="#087b74" stroke-width="11"/>
+              <rect x="57" y="40" width="35" height="35" rx="9" fill="#ee7740"/>
+              <circle cx="74.5" cy="57.5" r="7" fill="#fff9f2"/>
+              <path d="M93 88H67V63" fill="none" stroke="#143f43" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M93 88 109 72" fill="none" stroke="#087b74" stroke-width="8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="logo-name"><i></i>얼마길</div>
+          <h3>미니멀 모노그램 ‘ㅇㅁㄱ’</h3>
+          <p>초성을 원·태그·길로 재해석한 IT 스타트업형 심볼로, 작은 아이콘에서도 선명합니다.</p>
+        </article>
+      </section>
+
+      <h2>2. 메인 배경 문구 2안</h2>
+      <section class="hero-grid">
+        <article class="hero-card">
+          <div class="hero-content">
+            <small>AI TRAVEL, MADE SIMPLE</small>
+            <h3>동선은 가볍게,<br /><em>예산은 스마트하게.</em></h3>
+            <p>여행의 이동과 비용을 한 번에 설계하는 서비스 성격이 명확하게 드러나는 문구입니다.</p>
+          </div>
+        </article>
+        <article class="hero-card">
+          <div class="hero-content">
+            <small>YOUR BUDGET, YOUR ROUTE</small>
+            <h3>내 예산에 딱 맞춘<br /><em>단 하나의 길, 얼마길.</em></h3>
+            <p>개인화와 브랜드 이름을 강조해 기억에 남는 인상을 만드는 문구입니다.</p>
+          </div>
+        </article>
+      </section>
+
+      <h2>3. 메인 배경 사진 4안</h2>
+      <section class="background-grid">
+        <article class="background-card" style="--photo: url('https://images.unsplash.com/photo-1537402639622-3d8e35abe1ab?auto=format&fit=crop&w=2200&q=90')">
+          <em>OPTION 01</em><div><small>CINEMATIC COASTAL ROAD</small><h3>감성적인 해안도로</h3><p>‘길’의 브랜드 의미를 가장 직관적으로 보여주는, 해방감 있는 드론 구도입니다.</p></div>
+        </article>
+        <article class="background-card" style="--photo: url('https://static.wixstatic.com/media/56ad49_2f2f0f9e3a4e492d9ecc224a066c1e89~mv2.webp/v1/fill/w_1920,h_1080,al_c,q_90,enc_avif,quality_auto/56ad49_2f2f0f9e3a4e492d9ecc224a066c1e89~mv2.webp')">
+          <em>OPTION 02</em><div><small>MISTY FOREST TRAIL</small><h3>안개 낀 신비로운 숲길</h3><p>짙은 초록과 안개가 흰색 타이틀의 가독성을 높이고, 차분한 프리미엄 무드를 만듭니다.</p></div>
+        </article>
+        <article class="background-card" style="--photo: url('https://images.unsplash.com/photo-1751441080190-2bd2790f7765?auto=format&fit=crop&w=2200&q=90')">
+          <em>OPTION 03</em><div><small>TWILIGHT CITYSCAPE</small><h3>노을빛 도시의 거리</h3><p>오렌지 포인트 로고와 조화를 이루며, 여행을 떠나고 싶은 에너지를 강조합니다.</p></div>
+        </article>
+        <article class="background-card" style="--photo: url('https://images.unsplash.com/photo-1533013404834-c196f079ca57?auto=format&fit=crop&w=2200&q=90')">
+          <em>OPTION 04</em><div><small>MINIMAL SALT FLATS</small><h3>광활한 지평선과 여백</h3><p>텍스트를 가장 또렷하게 드러내는 미니멀한 구성으로, 글로벌 플랫폼 인상을 만듭니다.</p></div>
+        </article>
+      </section>
+
+      <a class="back" href="/">현재 사이트로 돌아가기 →</a>
+    </main>
+  </body>
+</html>

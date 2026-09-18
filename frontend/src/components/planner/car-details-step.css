@@ -1,0 +1,19 @@
+.premium-car-options { display:grid; gap:20px; margin-top:23px; }
+.premium-car-options > section { display:grid; gap:12px; }
+.car-option-heading { display:flex; align-items:center; justify-content:space-between; gap:15px; }
+.car-option-heading small { color:#829791; font:700 9px/1 Inter,sans-serif; letter-spacing:.13em; }
+.car-option-heading b { display:flex; align-items:center; gap:6px; color:#244d48; font-size:12px; font-weight:750; }
+.car-type-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+.car-type-grid > button { display:grid; min-height:142px; place-items:center; align-content:center; gap:8px; padding:14px 8px; border:1px solid #dce6e3; border-radius:15px; background:#fff; color:#54736d; transition:background .18s ease,box-shadow .18s ease,transform .18s ease; }
+.car-type-grid > button:hover { background:#f8fbfa; box-shadow:0 8px 20px rgba(20,67,61,.08); transform:translateY(-2px); }
+.car-type-grid > button.active { border-color:transparent; background:linear-gradient(145deg,#e7f5f1,#f4faf7); box-shadow:0 10px 24px rgba(12,102,92,.15),inset 0 0 0 1px #72afa5; color:#0c7068; }
+.car-type-grid i { display:grid; width:55px; height:50px; place-items:center; border-radius:15px; background:#f1f6f4; color:#547b74; font-style:normal; }
+.car-type-grid button.active i { background:#d6eee8; color:#08776e; }
+.car-type-grid b { color:#264c48; font-size:13px; font-weight:800; }
+.car-type-grid small { color:#859893; font-size:9px; line-height:1.3; }
+.fuel-option-section { padding-top:17px; border-top:1px solid #e8eeec; }
+.fuel-chip-list { display:flex; flex-wrap:wrap; gap:8px; }
+.fuel-chip-list button { min-width:92px; min-height:37px; padding:0 18px; border:1px solid #d4e2de; border-radius:999px; background:#fff; color:#55736e; font-size:11px; font-weight:750; transition:.18s ease; }
+.fuel-chip-list button:hover { border-color:#9bbfb7; background:#f7fbf9; }
+.fuel-chip-list button.active { border-color:transparent; background:#e1f2ed; color:#08736b; box-shadow:inset 0 0 0 1px #82b8ae,0 5px 13px rgba(12,106,96,.11); }
+@media(max-width:600px){.car-type-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.car-type-grid>button{min-height:120px}.fuel-chip-list button{flex:1;min-width:0}}

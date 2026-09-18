@@ -1,0 +1,115 @@
+.korea-svg-map-shell,
+.region-detail-map-shell {
+  position: relative;
+  width: min(100%, 930px);
+  margin: 0 auto;
+  padding: clamp(.65rem, 1.5vw, 1rem);
+  overflow: hidden;
+  border: 1px solid rgba(12, 130, 121, .2);
+  border-radius: 1.35rem;
+  background: radial-gradient(circle at 18% 5%, rgba(230, 247, 240, .96), transparent 38%), linear-gradient(145deg, #fbfdfc 0%, #eef8f5 100%);
+}
+
+.korea-svg-map,
+.region-detail-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(74vh, 760px);
+  overflow: visible;
+}
+
+.administrative-geography {
+  cursor: pointer;
+  fill: #fffefa;
+  stroke: #58b6aa;
+  stroke-width: 1.35;
+  vector-effect: non-scaling-stroke;
+  outline: none;
+  transition: fill 150ms ease, stroke 150ms ease, filter 150ms ease;
+}
+
+.administrative-geography:hover,
+.administrative-geography:focus-visible {
+  fill: #dff5ed;
+  stroke: #047f75;
+  stroke-width: 2.4;
+  filter: drop-shadow(0 5px 6px rgba(8, 101, 92, .2));
+}
+
+.administrative-geography:focus-visible { stroke: #e66c3c; }
+.administrative-geography.is-selected { fill: #078a80; stroke: #056c64; stroke-width: 2.5; }
+.district-geography { stroke-width: 1.05; }
+
+.administrative-region-label,
+.administrative-district-label {
+  pointer-events: none;
+  fill: #075f58;
+  stroke: rgba(255, 255, 255, .96);
+  stroke-width: 3px;
+  paint-order: stroke fill;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -.055em;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.administrative-region-label.is-selected,
+.administrative-district-label.is-selected { fill: #fff; stroke: rgba(4, 93, 85, .8); }
+.administrative-district-label { font-size: 11px; stroke-width: 2.7px; }
+
+.region-detail-map-shell { width: 100%; padding: .75rem; }
+.region-detail-map-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; padding: 11px 14px; border-radius: 12px; background: rgba(224, 245, 237, .82); color: #4f7d76; font-size: 11px; }
+.region-detail-map-meta b { color: #116f66; font-size: 12px; }
+.region-detail-quick-select { margin-top: 12px; padding: 14px; border: 1px solid #d3e8e1; border-radius: 14px; background: rgba(255, 255, 255, .86); }
+.region-detail-quick-select > div:first-child { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.region-detail-quick-select > div:first-child b { color: #145f58; font-size: 13px; }
+.region-detail-quick-select > div:first-child small { color: #78918c; font-size: 10px; font-weight: 700; }
+.region-detail-quick-list { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; }
+.region-detail-quick-group { min-width: 0; }
+.region-detail-quick-group > strong { display: block; margin-bottom: 8px; color: #245f59; font-size: 11px; }
+.region-detail-quick-select.is-grouped .region-detail-quick-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.region-detail-quick-select.is-grouped .region-detail-quick-group { padding: 12px; border-radius: 11px; background: #f1faf6; }
+.region-detail-quick-select.is-grouped .region-detail-quick-group > div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.region-detail-quick-select button { min-height: 40px; padding: 8px 6px; border: 1px solid #bddfd6; border-radius: 9px; background: #fff; color: #176c64; font: 800 11px "Noto Sans KR", sans-serif; cursor: pointer; }
+.region-detail-quick-select button:hover, .region-detail-quick-select button:focus-visible { border-color: #078a80; outline: 0; background: #0c877d; color: #fff; box-shadow: 0 5px 10px rgba(8, 117, 106, .16); }
+.region-detail-quick-select button.is-selected { border-color: #078a80; background: #e1f5ef; color: #086e66; }
+
+.administrative-map-status {
+  display: grid;
+  min-height: 390px;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  color: #447d76;
+  font-size: 13px;
+}
+
+.administrative-map-spinner { width: 32px; height: 32px; border: 3px solid #cce9e1; border-top-color: #078a80; border-radius: 50%; animation: administrative-map-spin .7s linear infinite; }
+@keyframes administrative-map-spin { to { transform: rotate(360deg); } }
+
+.administrative-map-error { display: grid; min-height: 260px; place-items: center; align-content: center; gap: 7px; color: #567c76; text-align: center; }
+.administrative-map-error > b { color: #155c55; font-size: 15px; }
+.administrative-map-error > small { font-size: 11px; }
+.korea-map-fallback,
+.district-map-fallback-list { display: grid; width: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 12px; }
+.korea-map-fallback button,
+.district-map-fallback-list button { padding: 10px 7px; border: 1px solid #bcded5; border-radius: 9px; background: #fff; color: #176c64; font: 800 11px "Noto Sans KR", sans-serif; cursor: pointer; }
+.korea-map-fallback button:hover,
+.district-map-fallback-list button:hover { border-color: #078a80; background: #e7f7f0; }
+
+.korea-map-a11y-note { margin: .25rem 0 .05rem; color: #63817e; font-size: .76rem; text-align: center; }
+
+@media (max-width: 620px) {
+  .korea-svg-map-shell, .region-detail-map-shell { border-radius: 1rem; padding: .4rem; }
+  .administrative-region-label { font-size: 11px; }
+  .administrative-district-label { font-size: 9px; }
+  .region-detail-quick-select > div:first-child { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .region-detail-quick-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .region-detail-quick-select.is-grouped .region-detail-quick-groups { grid-template-columns: 1fr; }
+  .region-detail-quick-select.is-grouped .region-detail-quick-group > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .region-detail-map-meta { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .korea-map-fallback, .district-map-fallback-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

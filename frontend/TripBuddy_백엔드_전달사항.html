@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TripBuddy 프론트엔드 변경 및 백엔드 연동 안내</title>
+  <style>
+    :root{--ink:#153f3b;--muted:#66807b;--line:#d8e6e1;--soft:#f3f8f6;--mint:#e5f4ef;--teal:#087b72;--orange:#ed6a3a;--paper:#fff}
+    *{box-sizing:border-box}body{margin:0;background:#edf4f1;color:var(--ink);font-family:Pretendard,"Noto Sans KR",Arial,sans-serif;line-height:1.62;word-break:keep-all}.page{width:min(1080px,calc(100% - 32px));margin:28px auto;padding:50px 58px 58px;background:var(--paper);border:1px solid var(--line);border-radius:24px}.eyebrow{margin:0;color:var(--teal);font-size:12px;font-weight:900;letter-spacing:.12em}.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:30px;align-items:end;padding-bottom:30px;border-bottom:2px solid var(--ink)}h1{max-width:720px;margin:8px 0 10px;font-size:38px;line-height:1.18;letter-spacing:-2.2px}.hero p{max-width:720px;margin:0;color:var(--muted);font-size:15px}.status{min-width:210px;padding:18px;border-radius:16px;background:var(--mint)}.status b{display:block;color:var(--teal);font-size:17px}.status span{display:block;margin-top:4px;color:#52716b;font-size:12px}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0}.summary article{padding:17px 18px;border:1px solid var(--line);border-radius:14px}.summary small{display:block;color:var(--muted);font-size:11px;font-weight:800}.summary strong{display:block;margin-top:5px;font-size:18px;letter-spacing:-.6px}.summary article:first-child{background:var(--soft)}.summary article:last-child{border-color:#f2c5b4;background:#fff8f4}.section{padding:30px 0;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}.section-head{display:grid;grid-template-columns:52px minmax(0,1fr);gap:13px;align-items:start;margin-bottom:20px}.number{display:grid;width:42px;height:42px;place-items:center;border-radius:11px;background:var(--ink);color:#fff;font-size:13px;font-weight:900}.section h2{margin:0;font-size:24px;letter-spacing:-1px}.section-head p{margin:3px 0 0;color:var(--muted);font-size:13px}.features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.feature{display:grid;grid-template-columns:34px minmax(0,1fr);gap:11px;padding:14px 15px;border-radius:12px;background:var(--soft)}.feature i{display:grid;width:30px;height:30px;place-items:center;border-radius:9px;background:#dcefe9;color:var(--teal);font-size:12px;font-style:normal;font-weight:900}.feature b{display:block;font-size:14px}.feature span{display:block;margin-top:2px;color:var(--muted);font-size:12px}.principle{display:flex;align-items:center;gap:13px;margin:0 0 20px;padding:16px 18px;border-left:4px solid var(--teal);background:var(--soft)}.principle strong{font-size:15px}.principle span{color:var(--muted);font-size:12px}.flow{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr;align-items:stretch}.flow article{padding:16px;border:1px solid var(--line);border-radius:13px}.flow small{color:var(--teal);font-size:10px;font-weight:900}.flow b{display:block;margin:5px 0;font-size:15px}.flow p{margin:0;color:var(--muted);font-size:11px}.arrow{display:grid;place-items:center;color:var(--orange);font-size:20px;font-weight:900}.requests{display:grid;gap:12px}.request{display:grid;grid-template-columns:190px minmax(0,1fr);overflow:hidden;border:1px solid var(--line);border-radius:14px}.request>header{padding:17px;background:var(--soft)}.request>header small{color:var(--teal);font-size:10px;font-weight:900}.request>header h3{margin:4px 0 0;font-size:15px}.request>div{padding:15px 18px}.request p{margin:0 0 8px;color:var(--muted);font-size:12px}.chips{display:flex;flex-wrap:wrap;gap:6px}.chips code{padding:4px 7px;border-radius:6px;background:#edf5f2;color:#285e58;font-family:Consolas,monospace;font-size:10px}.priority{display:inline-block;margin-top:10px;padding:4px 8px;border-radius:999px;background:#fff1ea;color:#b44724;font-size:10px;font-weight:900}.warning{margin-top:22px;padding:18px;border:1px solid #f0c1ae;border-radius:14px;background:#fff8f4}.warning b{display:block;color:#a94423}.warning p{margin:5px 0 0;color:#775d54;font-size:12px}.footer{display:flex;justify-content:space-between;gap:20px;align-items:center;padding-top:28px}.footer b{font-size:16px}.footer p{margin:3px 0 0;color:var(--muted);font-size:12px}.badge{padding:9px 12px;border-radius:9px;background:var(--ink);color:#fff;font-size:11px;font-weight:900}@media(max-width:760px){.page{width:100%;margin:0;padding:28px 18px;border:0;border-radius:0}.hero{grid-template-columns:1fr}h1{font-size:30px}.summary,.features{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.arrow{height:30px;transform:rotate(90deg)}.request{grid-template-columns:1fr}.footer{align-items:flex-start;flex-direction:column}}@media print{body{background:#fff}.page{width:100%;margin:0;padding:20mm 16mm;border:0}.section{break-inside:avoid}.request{break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">TRIPBUDDY · FRONTEND HANDOFF</p>
+        <h1>프론트엔드 기능 개선 및<br />백엔드 연동 안내</h1>
+        <p>현재 구현된 기능과 향후 실제 DB·API 연결 시 필요한 항목을 한 문서로 정리했습니다.</p>
+      </div>
+      <aside class="status"><b>백엔드 변경 없음</b><span>코드 · DB · API 규격 · 배포 환경 모두 미수정</span></aside>
+    </header>
+
+    <section class="summary" aria-label="작업 요약">
+      <article><small>현재 작업 범위</small><strong>프론트엔드 로컬</strong></article>
+      <article><small>작동 방식</small><strong>서버 응답 우선 + 폴백</strong></article>
+      <article><small>백엔드 영향</small><strong>없음</strong></article>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><span class="number">01</span><div><h2>현재 프론트에 추가된 기능</h2><p>백엔드 수정 없이 화면과 사용자 경험을 보완했습니다.</p></div></div>
+      <div class="features">
+        <article class="feature"><i>UI</i><div><b>일정 화면 재구성</b><span>데스크톱·모바일 레이아웃과 글자 위계, 시간표 가독성 개선</span></div></article>
+        <article class="feature"><i>₩</i><div><b>경비 정보 재배치</b><span>개인 교통비, 공동 예약·차량비, 식사·관광비를 구분해 표시</span></div></article>
+        <article class="feature"><i>01</i><div><b>식당 비용 보정</b><span>0원으로 수신된 식당은 공개 메뉴가 또는 업종 평균가로 프론트 추정</span></div></article>
+        <article class="feature"><i>↕</i><div><b>일정 순서 변경</b><span>드래그 후 체류·이동시간을 다시 계산하고 고정 일정은 유지</span></div></article>
+        <article class="feature"><i>15</i><div><b>제주 관광지 상세</b><span>애월 카페 거리 포함 제주 핵심 지역 15곳의 상세 폴백 제공</span></div></article>
+        <article class="feature"><i>AI</i><div><b>대체 장소 추천</b><span>현재 좌표·장소 유형·취향 적합도를 계산해 후보를 다르게 노출</span></div></article>
+        <article class="feature"><i>→</i><div><b>제휴 예약 UI</b><span>항공권·렌터카 특가 예약 연결을 위한 버튼 인터페이스 추가</span></div></article>
+        <article class="feature"><i>MO</i><div><b>모바일 전용 화면</b><span>단순 축소가 아닌 모바일용 단일 열 구조와 강조 체계 적용</span></div></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><span class="number">02</span><div><h2>현재 데이터 처리 원칙</h2><p>기존 백엔드 구현을 보호하기 위한 호환 방식입니다.</p></div></div>
+      <div class="principle"><strong>백엔드 응답이 있으면 항상 우선 사용합니다.</strong><span>응답 누락·0원·상세 조회 실패일 때만 프론트 폴백이 동작합니다.</span></div>
+      <div class="flow">
+        <article><small>STEP 1</small><b>기존 API 요청</b><p>현재 백엔드 계약과 엔드포인트를 그대로 사용합니다.</p></article><span class="arrow">→</span>
+        <article><small>STEP 2</small><b>응답 유효성 확인</b><p>ID, 상세 정보, 가격, 이미지 등 화면에 필요한 값을 확인합니다.</p></article><span class="arrow">→</span>
+        <article><small>STEP 3</small><b>부족한 값만 보완</b><p>프론트 폴백으로 화면 중단과 빈 상태를 방지합니다.</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><span class="number">03</span><div><h2>추후 백엔드에서 연결할 항목</h2><p>전면 개편이 아니라 필요한 데이터와 조회 기능을 단계적으로 추가하면 됩니다.</p></div></div>
+      <div class="requests">
+        <article class="request"><header><small>연동 1</small><h3>관광지 상세 데이터</h3><span class="priority">우선순위 높음</span></header><div><p>지역형 관광지를 포함해 일정에 들어가는 모든 장소에 안정적인 고유 ID와 상세 정보를 제공합니다.</p><div class="chips"><code>id</code><code>name</code><code>categoryName</code><code>introduction</code><code>representativeImageUrl</code><code>address</code><code>latitude</code><code>longitude</code><code>phoneNumber</code><code>tags</code></div></div></article>
+        <article class="request"><header><small>연동 2</small><h3>대체 장소 검색 API</h3><span class="priority">DB 활용 핵심</span></header><div><p>현재 장소와 좌표, 유형, 선호 테마, 제외 목록을 받아 DB에서 적합한 후보를 반환합니다. 프론트가 거리·취향 점수를 표시할 수 있습니다.</p><div class="chips"><code>currentPlaceId</code><code>latitude</code><code>longitude</code><code>placeType</code><code>preferenceTags</code><code>excludePlaceIds</code><code>radiusKm</code><code>limit</code></div></div></article>
+        <article class="request"><header><small>연동 3</small><h3>일정 순서 변경 저장</h3></header><div><p>모든 일정 항목에 고유 eventId를 제공하고, 정렬된 ID 목록과 고정 일정 여부를 받아 서버에서도 변경 결과를 영구 저장합니다.</p><div class="chips"><code>revisionId</code><code>dayIndex</code><code>eventIds</code><code>isLocked</code><code>startAt</code><code>endAt</code><code>travelMinutes</code></div></div></article>
+        <article class="request"><header><small>연동 4</small><h3>식당 예상 비용</h3></header><div><p>무료와 가격 미확인을 구분하기 위해 미확인 가격은 0 대신 null을 권장합니다. 대표 메뉴와 출처를 함께 주면 프론트 추정치를 제거할 수 있습니다.</p><div class="chips"><code>pricePerPerson</code><code>representativeMenu</code><code>menuPrice</code><code>priceSource</code><code>approximate</code><code>priceUpdatedAt</code></div></div></article>
+        <article class="request"><header><small>연동 5</small><h3>이미지·후기 연결</h3></header><div><p>사용 권한이 확인된 대표 이미지와 공식 지도 또는 카카오플레이스 URL을 반환하면 상세 화면에서 그대로 연결합니다.</p><div class="chips"><code>representativeImageUrl</code><code>imageUrls</code><code>placeUrl</code><code>rating</code><code>reviewCount</code><code>reviewSummary</code></div></div></article>
+      </div>
+      <aside class="warning"><b>중요: 기존 백엔드 로직을 변경할 필요는 없습니다.</b><p>현재 API 응답에 필요한 필드를 보완하거나 별도의 조회 API를 추가하는 방식으로 단계적 연결이 가능합니다. 프론트 폴백은 실제 데이터가 제공되면 자동으로 후순위가 됩니다.</p></aside>
+    </section>
+
+    <footer class="footer"><div><b>현재 상태</b><p>프론트 로컬 빌드 및 자동 테스트 통과 · 백엔드/배포 미수정</p></div><span class="badge">BACKEND SAFE</span></footer>
+  </main>
+</body>
+</html>

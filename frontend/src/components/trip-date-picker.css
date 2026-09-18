@@ -1,0 +1,81 @@
+.trip-date-field { position: relative; padding-right: 13px !important; padding-left: 13px !important; border-color: #bfddd5 !important; background: linear-gradient(135deg, #fbfffd 0%, #f5fbf8 100%) !important; }
+.trip-date-field > small { padding-bottom: 10px; border-bottom: 1px solid #dcebe6; color: #6f8a84 !important; font-size: 11px !important; font-weight: 700; }
+.trip-date-field > small > b { display: inline-flex; align-items: center; min-height: 24px; padding: 4px 9px; border-radius: 999px; background: #e4f5ef; color: #08776e !important; font-size: 12px !important; font-weight: 900 !important; }
+.trip-date-range-trigger { display: grid; width: 100%; grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr) 32px; align-items: center; gap: 10px; margin-top: 10px; padding: 7px; border: 1px solid #b8d9d1; border-radius: 13px; background: #fff; color: #14564f; text-align: left; cursor: pointer; box-shadow: 0 4px 12px rgba(17, 92, 83, .05); }
+.trip-date-range-trigger:hover, .trip-date-range-trigger:focus-visible { border-color: #0c9488; outline: 0; box-shadow: 0 0 0 3px rgba(13, 148, 136, .1); }
+.trip-date-range-trigger > span { display: grid; gap: 4px; min-width: 0; min-height: 58px; align-content: center; padding: 8px 11px; border-radius: 9px; background: #f4faf7; }
+.trip-date-range-trigger b { font-size: 15px; font-weight: 900; }
+.trip-date-range-trigger small { overflow: hidden; color: #365f5a; font-size: 12px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+.trip-date-range-trigger em { color: #0c877d; font-size: 11px; font-style: normal; font-weight: 800; }
+.trip-date-range-trigger > i { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: #e2f3ee; color: #087c72; font-style: normal; font-weight: 900; text-align: center; }
+.trip-date-range-trigger > svg { box-sizing: content-box; padding: 6px; border-radius: 8px; background: #e7f5f1; color: #087c72; }
+
+@media (max-width: 520px) {
+  .trip-date-field > small { align-items: flex-start !important; flex-direction: column; gap: 5px !important; }
+  .trip-date-range-trigger { grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr); }
+  .trip-date-range-trigger > svg { display: none; }
+  .trip-date-range-trigger > span { padding: 8px; }
+}
+
+.trip-calendar-backdrop { position: fixed; z-index: 190; inset: 0; display: grid; place-items: center; padding: 24px; overflow: auto; background: rgba(9, 52, 48, .57); backdrop-filter: blur(7px); }
+.trip-calendar-modal { width: min(1100px, 100%); overflow: hidden; border: 1px solid #c9e3dc; border-radius: 24px; background: #fff; box-shadow: 0 28px 75px rgba(2, 45, 41, .32); color: #173f3b; }
+.trip-calendar-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 27px; border-bottom: 1px solid #e0ebe8; }
+.trip-calendar-header > div:first-child > span { display: inline-flex; align-items: center; gap: 6px; color: #078a80; font-size: 11px; font-weight: 900; letter-spacing: .05em; }
+.trip-calendar-header h2 { margin: 5px 0 3px; font-size: 21px; letter-spacing: -.045em; }
+.trip-calendar-header p { margin: 0; color: #728985; font-size: 12px; font-weight: 600; }
+.trip-calendar-weather-notice { display:flex; align-items:center; justify-content:center; gap:7px; min-height:34px; padding:8px 18px; border-bottom:1px solid #e8f0ee; background:#f5fbf9; color:#55756f; font-size:11px; font-weight:750; }
+.trip-calendar-weather-notice span { color:#e8a63a; font-size:14px; }
+.trip-calendar-controls { display: flex; align-items: center; gap: 7px; }
+.trip-calendar-controls button, .trip-calendar-controls select { height: 37px; border: 1px solid #d5e2df; border-radius: 9px; background: #fff; color: #385d58; font: 750 12px "Noto Sans KR", sans-serif; }
+.trip-calendar-controls button { display: grid; width: 37px; place-items: center; cursor: pointer; }
+.trip-calendar-controls button:disabled { opacity: .35; cursor: default; }
+.trip-calendar-controls select { padding: 0 9px; cursor: pointer; }
+.trip-calendar-controls .trip-calendar-close { margin-left: 5px; border-radius: 50%; }
+
+.trip-calendar-body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 42px; padding: 30px 34px 32px; user-select: none; }
+.trip-calendar-month h3 { margin: 0 0 16px; color: #1c4641; font-size: 16px; text-align: center; }
+.trip-calendar-weekdays, .trip-calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.trip-calendar-weekdays { margin-bottom: 6px; color: #708a86; font-size: 11px; font-weight: 800; text-align: center; }
+.trip-calendar-weekdays span { padding: 5px; }
+.trip-calendar-weekdays span:first-child { color: #e45757; }
+.trip-calendar-weekdays span:last-child { color: #3c72d8; }
+.trip-calendar-days { row-gap: 5px; }
+.trip-calendar-empty { min-height: 66px; }
+.trip-calendar-day { position: relative; display: flex; min-width: 0; min-height: 66px; align-items: center; justify-content: flex-start; flex-direction: column; gap: 4px; padding: 6px 2px 4px; border: 0; border-radius: 11px; background: transparent; color: #244944; font: 750 13px "Noto Sans KR", sans-serif; cursor: pointer; touch-action: none; }
+.trip-calendar-day:hover:not(:disabled), .trip-calendar-day:focus-visible { outline: 0; background: #edf8f4; }
+.trip-calendar-day.is-disabled { color: #bcc9c6; cursor: default; }
+.trip-calendar-day.is-in-range, .trip-calendar-day.is-start, .trip-calendar-day.is-end { border-radius: 0; background: #ccfbf1; }
+.trip-calendar-day.is-start { border-radius: 12px 0 0 12px; }
+.trip-calendar-day.is-end { border-radius: 0 12px 12px 0; }
+.trip-calendar-day.is-start.is-end { border-radius: 12px; }
+.trip-calendar-day-number { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 50%; }
+.trip-calendar-day.is-start .trip-calendar-day-number, .trip-calendar-day.is-end .trip-calendar-day-number { background: #0d9488; color: #fff; box-shadow: 0 4px 8px rgba(13, 148, 136, .22); }
+.trip-calendar-weather { display: flex; align-items: center; justify-content: center; gap: 3px; color: #496d67; line-height: 1; }
+.trip-calendar-weather i { font-size: 15px; font-style: normal; }
+.trip-calendar-weather small { font-size: 10px; font-weight: 850; letter-spacing: -.04em; white-space: nowrap; }
+
+.trip-calendar-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 19px 27px; border-top: 1px solid #e0ebe8; background: #f7faf9; }
+.trip-calendar-time-group { display: flex; align-items: center; gap: 20px; }
+.trip-calendar-time-group label { display: flex; align-items: center; gap: 9px; }
+.trip-calendar-time-group label > span { display: inline-flex; align-items: center; gap: 5px; color: #315b56; font-size: 12px; font-weight: 850; }
+.trip-calendar-time-group svg { color: #0d9488; }
+.trip-calendar-time-group select { min-width: 92px; padding: 8px 10px; border: 1px solid #cedfdb; border-radius: 8px; background: #fff; color: #264e49; font: 750 12px "Noto Sans KR", sans-serif; }
+.trip-time-select-controls { display: grid; grid-template-columns: 76px 76px; gap: 6px; }
+.trip-time-select-controls select { min-width: 0; width: 100%; }
+.trip-time-select-controls select:disabled { opacity: .5; cursor: not-allowed; }
+.trip-calendar-confirm { display: flex; align-items: center; gap: 13px; }
+.trip-calendar-confirm small { color: #66827d; font-size: 11px; font-weight: 750; }
+.trip-calendar-confirm button { padding: 12px 24px; border: 0; border-radius: 11px; background: #0d9488; color: #fff; font: 850 14px "Noto Sans KR", sans-serif; cursor: pointer; }
+.trip-calendar-confirm button:hover { background: #115e59; }
+.trip-calendar-confirm button:disabled { background: #b7cbc7; cursor: default; }
+
+@media (max-width: 760px) {
+  .trip-calendar-backdrop { align-items: start; padding: 10px; }
+  .trip-calendar-header { align-items: flex-start; flex-direction: column; padding: 18px; }
+  .trip-calendar-controls { width: 100%; flex-wrap: wrap; }
+  .trip-calendar-body { grid-template-columns: 1fr; gap: 24px; padding: 18px; }
+  .trip-calendar-month:nth-child(2) { display: none; }
+  .trip-calendar-footer, .trip-calendar-time-group { align-items: stretch; flex-direction: column; }
+  .trip-calendar-footer { padding: 16px 18px; }
+  .trip-calendar-confirm { justify-content: space-between; }
+}

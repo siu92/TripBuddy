@@ -1,0 +1,43 @@
+.flight-airport-picker { position:relative; min-width:0; }
+.flight-route-selector { grid-template-columns:minmax(0,1fr) 58px minmax(0,1fr); overflow:hidden; }
+.flight-route-airport { display:grid; align-content:center; gap:8px; min-width:0; min-height:94px; padding:15px 19px 14px; border:0; background:transparent; text-align:left; transition:background .18s ease; }
+.flight-route-airport:first-child { border-radius:15px 0 0 15px; }
+.flight-route-airport:last-child { border-radius:0 15px 15px 0; }
+.flight-route-airport.is-selectable { cursor:pointer; }
+.flight-route-airport.is-selectable:hover,.flight-route-airport[aria-expanded="true"] { background:#f5f9f8; }
+.flight-route-airport.is-fixed { cursor:default; opacity:1; }
+.flight-route-airport > span { color:#738983; font-size:10px; font-weight:700; letter-spacing:.02em; }
+.flight-route-airport > div { display:grid; grid-template-columns:62px minmax(0,1fr) auto; grid-template-rows:auto auto; align-items:center; gap:2px 10px; min-width:0; }
+.flight-route-airport strong { grid-row:1/3; color:#0c6261; font:750 25px/1 Inter,sans-serif; letter-spacing:-.045em; }
+.flight-route-airport b { color:#173f3d; font-size:14px; font-weight:750; line-height:1.15; }
+.flight-route-airport small { overflow:hidden; color:#829590; font-size:10px; font-weight:500; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+.flight-route-airport svg { grid-column:3; grid-row:1/3; color:#52766f; transition:transform .18s ease; }
+.flight-route-airport[aria-expanded="true"] svg { transform:rotate(180deg); }
+.flight-route-airport em { grid-column:3; grid-row:1/3; align-self:center; padding:4px 7px; border-radius:999px; background:#eef5f2; color:#718983; font-size:8px; font-style:normal; font-weight:800; line-height:1; }
+.airport-popover { position:absolute; z-index:8; top:calc(100% + 10px); left:0; width:min(720px,calc(100vw - 96px)); max-height:min(450px,58vh); overflow:auto; padding:19px; border:1px solid #dce4e1; border-radius:17px; background:rgba(255,255,255,.985); box-shadow:0 24px 58px rgba(20,47,45,.20),0 3px 12px rgba(20,47,45,.08); }
+.airport-popover header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding:0 2px 15px; border-bottom:1px solid #edf1ef; }
+.airport-popover header > div { display:grid; gap:4px; }
+.airport-popover header span { display:flex; align-items:center; gap:6px; color:#48726c; font:700 9px/1 Inter,sans-serif; letter-spacing:.12em; }
+.airport-popover header b { color:#173b39; font-size:17px; font-weight:750; letter-spacing:-.035em; }
+.airport-popover header small { color:#748984; font-size:11px; line-height:1.45; }
+.airport-popover header > button { display:grid; flex:0 0 auto; width:31px; height:31px; place-items:center; border:1px solid #dce6e3; border-radius:50%; background:#fff; color:#5f7c76; }
+.airport-region-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:19px 24px; padding-top:17px; }
+.airport-region-group { display:grid; align-content:start; gap:8px; }
+.airport-region-group.is-fixed { width:min(330px,100%); padding-top:17px; }
+.airport-region-group > p { display:flex; align-items:center; justify-content:space-between; margin:0; }
+.airport-region-group > p span { color:#214d49; font-size:12px; font-weight:800; }
+.airport-region-group > p small { color:#93a39f; font:600 9px/1 Inter,sans-serif; }
+.airport-region-group > div { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+.airport-option { display:grid; grid-template-columns:42px minmax(0,1fr) 17px; align-items:center; gap:9px; min-height:59px; padding:10px 11px; border:1px solid #e1e8e5; border-radius:11px; background:#fff; text-align:left; transition:border-color .16s ease,background .16s ease,box-shadow .16s ease; }
+.airport-option:hover { border-color:#9ebeb7; background:#f8fbfa; box-shadow:0 5px 13px rgba(25,76,69,.07); }
+.airport-option.selected { border-color:#7caea5; background:#eff7f4; }
+.airport-option > strong { color:#0d6663; font:750 14px/1 Inter,sans-serif; letter-spacing:-.02em; }
+.airport-option > span { display:grid; min-width:0; gap:2px; }
+.airport-option b { color:#244743; font-size:11px; font-weight:750; }
+.airport-option small { overflow:hidden; color:#839590; font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
+.airport-option svg { color:#15766e; }
+@media(max-width:760px){
+  .flight-route-selector{grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr)}.flight-route-airport{min-height:86px;padding:12px 10px}.flight-route-airport>div{grid-template-columns:48px minmax(0,1fr) auto;gap:2px 7px}.flight-route-airport strong{font-size:20px}.flight-route-airport b{font-size:12px}.flight-route-airport small{font-size:8px}.flight-route-airport em{padding:3px 5px;font-size:7px}
+  .airport-popover{position:fixed;top:auto;right:9px;bottom:9px;left:9px;width:auto;max-height:72vh;padding:17px;border-radius:19px}
+  .airport-region-list{grid-template-columns:1fr;gap:17px}.airport-region-group>div{grid-template-columns:repeat(2,minmax(0,1fr))}.airport-option{grid-template-columns:37px minmax(0,1fr) 16px}
+}

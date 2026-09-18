@@ -1,0 +1,590 @@
+.travel-date-picker {
+  --tdp-ink: #075f5a;
+  --tdp-brand: #0b8b82;
+  --tdp-brand-deep: #056760;
+  --tdp-mint: #dff5ee;
+  --tdp-mint-soft: #f2fbf8;
+  --tdp-line: #c5e5de;
+  --tdp-muted: #6b8d88;
+  width: 100%;
+  border: 1px solid var(--tdp-line);
+  border-radius: 1.35rem;
+  background: linear-gradient(135deg, #ffffff 0%, #fbfefc 65%, #f3fbf8 100%);
+  box-shadow: 0 10px 28px rgba(15, 104, 95, 0.08);
+  color: var(--tdp-ink);
+  overflow: hidden;
+}
+
+.travel-date-picker *,
+.travel-date-picker *::before,
+.travel-date-picker *::after {
+  box-sizing: border-box;
+}
+
+.travel-date-picker button,
+.travel-date-picker select {
+  font: inherit;
+}
+
+.travel-date-picker__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem 1rem;
+}
+
+.travel-date-picker__eyebrow,
+.travel-date-picker__mock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--tdp-brand);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.travel-date-picker__eyebrow {
+  text-transform: uppercase;
+}
+
+.travel-date-picker__header h2 {
+  margin: 0.28rem 0 0.22rem;
+  color: #075b56;
+  font-size: clamp(1.05rem, 2vw, 1.38rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.travel-date-picker__header p {
+  margin: 0;
+  color: var(--tdp-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.travel-date-picker__mock-badge {
+  flex: 0 0 auto;
+  padding: 0.44rem 0.62rem;
+  border: 1px solid #d5eee8;
+  border-radius: 999px;
+  background: #f4fcf9;
+  color: #4b827b;
+}
+
+.travel-date-picker__selection-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0 1.35rem;
+  padding: 0.72rem;
+  border: 1px dashed #b9e0d8;
+  border-radius: 1rem;
+  background: rgba(244, 252, 249, 0.82);
+}
+
+.travel-date-picker__summary-card {
+  min-width: 0;
+  padding: 0.72rem 0.82rem;
+  border: 1px solid #d2e9e4;
+  border-radius: 0.82rem;
+  background: #fff;
+  color: var(--tdp-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.travel-date-picker__summary-card:hover,
+.travel-date-picker__summary-card:focus-visible {
+  border-color: #78c9bc;
+  box-shadow: 0 6px 14px rgba(9, 115, 105, 0.1);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.travel-date-picker__summary-card span {
+  display: inline-block;
+  padding: 0.17rem 0.42rem;
+  border-radius: 0.4rem;
+  background: #ebf8f4;
+  color: #078a80;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.travel-date-picker__summary-card b {
+  display: block;
+  overflow: hidden;
+  margin-top: 0.35rem;
+  color: #537b76;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.travel-date-picker__summary-card.is-filled {
+  border-color: #8bd1c5;
+  background: linear-gradient(135deg, #edfbf6, #fff);
+}
+
+.travel-date-picker__summary-card.is-filled b {
+  color: #075f5a;
+}
+
+.travel-date-picker__summary-card.is-target {
+  border-color: #078a80;
+  box-shadow: 0 0 0 3px rgba(11, 139, 130, 0.11);
+}
+
+.travel-date-picker__summary-arrow {
+  color: var(--tdp-brand);
+}
+
+.travel-date-picker__range-caption {
+  min-width: 4.15rem;
+  color: #6b918c;
+  font-size: 0.67rem;
+  line-height: 1.35;
+}
+
+.travel-date-picker__range-caption strong,
+.travel-date-picker__range-caption span {
+  display: block;
+}
+
+.travel-date-picker__range-caption strong {
+  color: #087b73;
+  font-size: 0.75rem;
+}
+
+.travel-date-picker__traveler-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: calc(100% - 2.7rem);
+  margin: 0.78rem 1.35rem 0;
+  padding: 0.68rem 0.78rem;
+  border: 1px solid #f0c9a9;
+  border-radius: 0.8rem;
+  background: #fffbf4;
+  color: #976136;
+  cursor: pointer;
+  text-align: left;
+}
+
+.travel-date-picker__traveler-notice:hover,
+.travel-date-picker__traveler-notice:focus-visible {
+  border-color: #e8a675;
+  outline: none;
+}
+
+.travel-date-picker__traveler-notice span {
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.travel-date-picker__traveler-notice b {
+  margin-right: 0.24rem;
+}
+
+.travel-date-picker__calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 1.35rem 0;
+  padding: 0.88rem 0 0.78rem;
+  border-top: 1px solid #e1f0ec;
+}
+
+.travel-date-picker__calendar-toolbar > div:first-child b,
+.travel-date-picker__calendar-toolbar > div:first-child span {
+  display: block;
+}
+
+.travel-date-picker__calendar-toolbar > div:first-child b {
+  color: #0a6963;
+  font-size: 0.82rem;
+}
+
+.travel-date-picker__calendar-toolbar > div:first-child span {
+  margin-top: 0.15rem;
+  color: #75938e;
+  font-size: 0.69rem;
+}
+
+.travel-date-picker__month-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.travel-date-picker__month-controls button {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid #c9e5df;
+  border-radius: 50%;
+  background: #fff;
+  color: #0a736b;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.travel-date-picker__month-controls button:hover:not(:disabled),
+.travel-date-picker__month-controls button:focus-visible:not(:disabled) {
+  border-color: var(--tdp-brand);
+  background: var(--tdp-mint);
+  outline: none;
+}
+
+.travel-date-picker__month-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.travel-date-picker__month-controls strong {
+  min-width: 6.8rem;
+  color: #075f5a;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.travel-date-picker__calendar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.45rem;
+  padding: 0.2rem 1.35rem 1.35rem;
+}
+
+.travel-date-picker__month + .travel-date-picker__month {
+  padding-left: 1.45rem;
+  border-left: 1px solid #e3f0ed;
+}
+
+.travel-date-picker__month h3 {
+  margin: 0 0 0.7rem;
+  color: #0b6660;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.travel-date-picker__weekdays,
+.travel-date-picker__days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.travel-date-picker__weekdays {
+  margin-bottom: 0.38rem;
+  color: #6c8a86;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.travel-date-picker__weekdays span:first-child {
+  color: #d9685c;
+}
+
+.travel-date-picker__weekdays span:last-child {
+  color: #4b89b9;
+}
+
+.travel-date-picker__days {
+  row-gap: 0.18rem;
+}
+
+.travel-date-picker__blank {
+  min-height: 3.5rem;
+}
+
+.travel-date-picker__day {
+  position: relative;
+  display: flex;
+  min-height: 3.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.26rem 0.08rem 0.2rem;
+  border: 0;
+  border-radius: 0.62rem;
+  background: transparent;
+  color: #28625d;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.travel-date-picker__day::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0.1rem 0;
+  border-radius: 0;
+  background: transparent;
+  content: "";
+}
+
+.travel-date-picker__day:hover:not(:disabled),
+.travel-date-picker__day:focus-visible:not(:disabled) {
+  background: #eefaf7;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.travel-date-picker__day-number,
+.travel-date-picker__weather,
+.travel-date-picker__weather-placeholder {
+  position: relative;
+  z-index: 1;
+}
+
+.travel-date-picker__day-number {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.travel-date-picker__weather {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.04rem;
+  color: #6d8f8a;
+  line-height: 1;
+}
+
+.travel-date-picker__weather small {
+  margin-top: 0.08rem;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+
+.travel-date-picker__weather.is-sunny { color: #e18a36; }
+.travel-date-picker__weather.is-partly { color: #b78d32; }
+.travel-date-picker__weather.is-cloudy { color: #75939b; }
+.travel-date-picker__weather.is-rain { color: #4887ac; }
+
+.travel-date-picker__weather-placeholder {
+  height: 1.3rem;
+}
+
+.travel-date-picker__day.is-in-range::before,
+.travel-date-picker__day.is-start::before,
+.travel-date-picker__day.is-end::before {
+  background: #dff5ee;
+}
+
+.travel-date-picker__day.is-start::before {
+  left: 50%;
+  border-radius: 0.62rem 0 0 0.62rem;
+}
+
+.travel-date-picker__day.is-end::before {
+  right: 50%;
+  border-radius: 0 0.62rem 0.62rem 0;
+}
+
+.travel-date-picker__day.is-start.is-end::before {
+  inset: 0.1rem;
+  border-radius: 0.62rem;
+}
+
+.travel-date-picker__day.is-start .travel-date-picker__day-number,
+.travel-date-picker__day.is-end .travel-date-picker__day-number {
+  background: var(--tdp-brand);
+  box-shadow: 0 3px 7px rgba(5, 116, 106, 0.22);
+  color: #fff;
+}
+
+.travel-date-picker__day.is-start .travel-date-picker__weather,
+.travel-date-picker__day.is-end .travel-date-picker__weather {
+  color: #287a72;
+}
+
+.travel-date-picker__day.is-disabled {
+  cursor: not-allowed;
+  color: #b8cbc7;
+}
+
+.travel-date-picker__day.is-disabled .travel-date-picker__weather {
+  opacity: 0.36;
+}
+
+.travel-date-picker__time-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.72rem;
+  padding: 1rem 1.35rem;
+  border-top: 1px solid #dceee9;
+  background: #f5fbf9;
+}
+
+.travel-date-picker__time-field {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.travel-date-picker__time-field span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #166f68;
+  font-size: 0.75rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.travel-date-picker__time-field select {
+  min-width: 5.25rem;
+  padding: 0.48rem 0.55rem;
+  border: 1px solid #bee0d8;
+  border-radius: 0.58rem;
+  background: #fff;
+  color: #075f5a;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.travel-date-picker__time-field select:focus-visible {
+  border-color: var(--tdp-brand);
+  outline: 2px solid rgba(11, 139, 130, 0.16);
+}
+
+.travel-date-picker__time-panel > svg {
+  flex: 0 0 auto;
+  color: #43a69c;
+}
+
+.travel-date-picker__time-panel p {
+  margin: 0 0 0 auto;
+  color: #78928d;
+  font-size: 0.67rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 760px) {
+  .travel-date-picker__selection-summary {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  .travel-date-picker__range-caption {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+
+  .travel-date-picker__range-caption strong,
+  .travel-date-picker__range-caption span {
+    display: inline;
+  }
+
+  .travel-date-picker__range-caption span::before {
+    margin: 0 0.3rem;
+    content: "·";
+  }
+
+  .travel-date-picker__calendar {
+    gap: 1rem;
+  }
+
+  .travel-date-picker__month + .travel-date-picker__month {
+    padding-left: 1rem;
+  }
+
+  .travel-date-picker__time-panel {
+    flex-wrap: wrap;
+  }
+
+  .travel-date-picker__time-panel p {
+    width: 100%;
+    margin: 0.1rem 0 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .travel-date-picker__header,
+  .travel-date-picker__calendar-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .travel-date-picker__header,
+  .travel-date-picker__selection-summary,
+  .travel-date-picker__calendar-toolbar,
+  .travel-date-picker__calendar {
+    margin-left: 0.9rem;
+    margin-right: 0.9rem;
+  }
+
+  .travel-date-picker__header {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .travel-date-picker__selection-summary {
+    padding: 0.55rem;
+  }
+
+  .travel-date-picker__summary-card {
+    padding: 0.58rem 0.55rem;
+  }
+
+  .travel-date-picker__summary-card b {
+    font-size: 0.73rem;
+  }
+
+  .travel-date-picker__traveler-notice {
+    width: calc(100% - 1.8rem);
+    margin-left: 0.9rem;
+    margin-right: 0.9rem;
+  }
+
+  .travel-date-picker__calendar-toolbar {
+    gap: 0.6rem;
+  }
+
+  .travel-date-picker__calendar {
+    grid-template-columns: 1fr;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .travel-date-picker__month + .travel-date-picker__month {
+    padding-top: 1rem;
+    padding-left: 0;
+    border-top: 1px solid #e3f0ed;
+    border-left: 0;
+  }
+
+  .travel-date-picker__day,
+  .travel-date-picker__blank {
+    min-height: 3.2rem;
+  }
+
+  .travel-date-picker__time-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .travel-date-picker__time-panel > svg {
+    display: none;
+  }
+
+  .travel-date-picker__time-field {
+    justify-content: space-between;
+  }
+}

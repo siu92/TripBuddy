@@ -1,0 +1,19 @@
+.food-preference { display:grid; grid-template-columns:210px minmax(0,1fr); gap:14px; align-items:center; padding:16px 17px; border:1px solid #dcebe4; border-radius:10px; background:linear-gradient(118deg,#fbfefc,#fffdf9); }
+.food-preference-heading { display:grid; gap:4px; }
+.food-preference-heading small { color:#718f88; font-size:10px; }
+.food-preference-heading b { color:#315b56; font-size:12px; }
+.food-preference-heading span { color:#819892; font-size:9px; line-height:1.45; }
+.food-preference-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+.food-preference-options button { display:grid; min-width:0; gap:5px; padding:8px 9px; overflow:hidden; border:1px solid #d7e6e1; border-radius:9px; background:#fff; color:#456c66; text-align:left; transition:.18s ease; }
+.food-preference-options button b { overflow:hidden; color:#315b56; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+.food-preference-options button img { display:block; width:100%; height:36px; border-radius:6px; object-fit:cover; filter:saturate(.88) contrast(1.02); }
+.food-preference-options button small { overflow:hidden; color:#8a9f9a; font-size:8px; text-overflow:ellipsis; white-space:nowrap; }
+.food-preference-options button:hover { border-color:#8cc5b8; background:#f5fbf8; }
+.food-preference-options button.active { border-color:#0d8278; background:#eaf7f2; box-shadow:inset 0 0 0 1px #0d8278; }
+.food-preference-options button.active b { color:#086c64; }
+.food-preference-options button:disabled { cursor:not-allowed; opacity:.45; filter:saturate(.45); }
+.food-preference-heading > span b { color:#0d8278; font-size:inherit; }
+.food-preference.compact { grid-template-columns:1fr; margin-top:17px; border:0; padding:0; background:transparent; }
+.food-preference.compact .food-preference-options { grid-template-columns:repeat(3,minmax(0,1fr)); }
+@media(max-width:980px){.food-preference{grid-template-columns:1fr}.food-preference-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.food-preference{padding:14px}.food-preference-options,.food-preference.compact .food-preference-options{grid-template-columns:repeat(2,minmax(0,1fr))}}

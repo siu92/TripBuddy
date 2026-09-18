@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>얼마길 · 히어로 배경 후보</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
+
+      :root {
+        color: #113f40;
+        background: #f2f8f5;
+        font-family: 'Noto Sans KR', system-ui, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body { margin: 0; padding: 48px 24px 80px; }
+
+      .preview-wrap { width: min(1380px, 100%); margin: 0 auto; }
+
+      .intro { margin-bottom: 24px; }
+      .eyebrow { margin: 0 0 8px; color: #008d88; font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+      h1 { margin: 0; color: #123d3f; font-size: clamp(27px, 4vw, 44px); letter-spacing: -.06em; }
+      .intro p:last-child { color: #5f7d7d; margin: 12px 0 0; font-size: 15px; }
+
+      .hero-preview {
+        position: relative;
+        min-height: min(53vw, 590px);
+        overflow: hidden;
+        border-radius: 28px;
+        background-position: center;
+        background-size: cover;
+        box-shadow: 0 22px 44px rgba(15, 62, 58, .15);
+      }
+
+      .hero-preview + .hero-preview { margin-top: 34px; }
+      .hero-preview::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(6, 44, 43, .79) 0%, rgba(6, 44, 43, .53) 35%, rgba(6, 44, 43, .10) 67%, rgba(6, 44, 43, .02) 100%);
+      }
+
+      .badge {
+        position: absolute;
+        top: 26px;
+        right: 28px;
+        z-index: 1;
+        padding: 10px 16px;
+        border: 1px solid rgba(255,255,255,.72);
+        border-radius: 999px;
+        color: #fff;
+        background: rgba(4, 46, 45, .32);
+        font-size: 13px;
+        font-weight: 700;
+        backdrop-filter: blur(8px);
+      }
+
+      .copy {
+        position: relative;
+        z-index: 1;
+        max-width: 650px;
+        padding: clamp(62px, 8vw, 112px) clamp(36px, 7vw, 100px);
+        color: #fff;
+      }
+      .copy .brand { margin: 0 0 20px; color: #ffcf77; font-size: 12px; font-weight: 800; letter-spacing: .16em; }
+      .copy h2 { margin: 0; color: #fff; font-size: clamp(37px, 5.1vw, 72px); line-height: 1.13; letter-spacing: -.075em; }
+      .copy h2 em { font-style: normal; color: #f6ffe4; }
+      .copy .description { max-width: 420px; margin: 23px 0 29px; color: rgba(255,255,255,.9); font-size: clamp(14px, 1.55vw, 18px); line-height: 1.75; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chips span { padding: 8px 13px; border: 1px solid rgba(255,255,255,.48); border-radius: 999px; background: rgba(255,255,255,.12); font-size: 12px; font-weight: 700; }
+      .caption { margin: 11px 3px 0; color: #477170; font-size: 14px; font-weight: 600; }
+
+      @media (max-width: 640px) {
+        body { padding: 28px 14px 48px; }
+        .hero-preview { min-height: 490px; border-radius: 20px; background-position: 62% center; }
+        .hero-preview::before { background: linear-gradient(90deg, rgba(6, 44, 43, .82), rgba(6, 44, 43, .32)); }
+        .badge { top: 18px; right: 18px; }
+        .copy { padding: 96px 28px 35px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="preview-wrap">
+      <section class="intro">
+        <p class="eyebrow">EOLMAGIL · HERO BACKGROUND CANDIDATES</p>
+        <h1>남은 두 자리, 실제 히어로 문구를 넣어 비교해 보세요.</h1>
+        <p>알프스·도시 야경은 제외했습니다. 현재 적용 중인 우유니·하와이·산토리니와 함께 순환할 후보입니다.</p>
+      </section>
+
+      <section class="hero-preview" style="background-image: url('/preview/hero-candidate-coastal-road.png')">
+        <span class="badge">후보 1 · 아조레스 해안 드라이브</span>
+        <div class="copy">
+          <p class="brand">YOUR BUDGET, YOUR ROUTE</p>
+          <h2>내 예산에 딱 맞춘<br /><em>단 하나의 길, 얼마길.</em></h2>
+          <p class="description">가고 싶은 곳과 사용할 수 있는 예산만 알려주세요.<br />AI가 현실적인 동선과 머무를 이유를 함께 설계합니다.</p>
+          <div class="chips"><span>예산 우선 설계</span><span>취향 기반 추천</span><span>낭비 없는 동선</span></div>
+        </div>
+      </section>
+      <p class="caption">맑은 바다와 굽이진 길을 강조한 청량한 휴양·드라이브 콘셉트</p>
+
+      <section class="hero-preview" style="background-image: url('/preview/hero-candidate-bali.png')">
+        <span class="badge">후보 2 · 발리 힐링 트래블</span>
+        <div class="copy">
+          <p class="brand">YOUR BUDGET, YOUR ROUTE</p>
+          <h2>내 예산에 딱 맞춘<br /><em>단 하나의 길, 얼마길.</em></h2>
+          <p class="description">가고 싶은 곳과 사용할 수 있는 예산만 알려주세요.<br />AI가 현실적인 동선과 머무를 이유를 함께 설계합니다.</p>
+          <div class="chips"><span>예산 우선 설계</span><span>취향 기반 추천</span><span>낭비 없는 동선</span></div>
+        </div>
+      </section>
+      <p class="caption">열대 자연과 사원 풍경을 활용한 이국적·차분한 힐링 콘셉트</p>
+    </main>
+  </body>
+</html>
