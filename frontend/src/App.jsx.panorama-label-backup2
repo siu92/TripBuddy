@@ -1711,7 +1711,7 @@ function App() {
               {planningPreviewPlaces.map((place, index) => (
                 <figure key={place.imageKey} style={{ "--card-index": index }}>
                   <img src={place.image} alt="" decoding="async" onError={(event) => { event.currentTarget.style.visibility = "hidden"; }} />
-                  
+                  <span className="planning-place-category">{place.category}{place.illustrative ? " · 예시 이미지" : ""}</span>
                   <figcaption>
                     <span>{place.icon || "⌖"}</span>
                     <div>
