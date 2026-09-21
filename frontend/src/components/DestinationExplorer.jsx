@@ -10,6 +10,7 @@ import {
 import KoreaRegionMap from "./KoreaRegionMap";
 import RegionDetailMap from "./RegionDetailMap";
 import { flattenDistricts } from "../data/locationCatalog";
+import { toSpotDestination } from "../utils/destinationSelection.js";
 import jejuCoastPhoto from "../assets/jeju-main-hero.jpeg";
 import "./destination-explorer.css";
 
@@ -192,21 +193,6 @@ export function preloadJejuDestinationImages() {
     return preload;
   });
 }
-
-export const toSpotDestination = (destination, spot, index) => ({
-  ...destination,
-  ...spot,
-  subSpots: undefined,
-  id: spot.id || `${destination.id}-spot-${index + 1}`,
-  parentDestinationId: destination.id,
-  title: spot.name,
-  subtitle: destination.title,
-  detail: spot.name,
-  countryCode: "KR",
-  scope: "domestic",
-  apiSearchKeyword: `${destination.title} ${spot.name}`,
-  needsGeocoding: false,
-});
 
 const normalizedText = (value) => String(value || "").replace(/\s+/g, "").toLocaleLowerCase("ko-KR");
 

@@ -82,7 +82,7 @@ test('place alternatives match the selected item category and destination', () =
   const destination = { region: '부산광역시', detail: '해운대구' };
   const food = getPlaceAlternatives(destination, { icon: '🍽', name: '기존 식당' });
   const sights = getPlaceAlternatives(destination, { icon: '📸', name: '기존 관광지' });
-  assert.equal(food.length, 6); assert.equal(sights.length, 6);
+  assert.equal(food.length, 6); assert.equal(sights.length, 9);
   assert.ok(food.every(place => /🍽|🍜|🍱|☕|🍲/.test(place.icon)));
   assert.ok(food.every(place => place.name.includes('해운대구')));
 });

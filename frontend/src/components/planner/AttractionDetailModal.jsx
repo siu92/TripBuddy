@@ -19,7 +19,7 @@ function tagList(value) {
   return [...new Set(tags.filter(t => typeof t === "string").map(t => t.trim()).filter(Boolean))];
 }
 
-export default function AttractionDetailModal({ attractionId, name, onClose }) {
+export default function AttractionDetailModal({ attractionId, name, onClose, compact = false }) {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -98,8 +98,8 @@ export default function AttractionDetailModal({ attractionId, name, onClose }) {
   const phone = String(detail?.phoneNumber || "").trim();
   const callable = /^\+?[\d\s()-]+$/.test(phone);
 
-  return createPortal(
-    <div className="attraction-detail-backdrop" onMouseDown={event => {
+  const modal = (
+    <div className={`attraction-detail-backdrop${compact ? " is-mobile-preview" : ""}`} onMouseDown={event => {
       if (event.target === event.currentTarget) onClose();
     }}>
       <section className="attraction-detail-modal" ref={panelRef} tabIndex={-1}
@@ -120,6 +120,8 @@ export default function AttractionDetailModal({ attractionId, name, onClose }) {
             <a className="attraction-detail-map-link" href={mapUrl} target="_blank" rel="noopener noreferrer">카카오맵에서 위치 보기 ↗</a>
           </>}
       </section>
-    </div>, document.body,
+    </div>
   );
+
+  return compact ? modal : createPortal(modal, document.body);
 }

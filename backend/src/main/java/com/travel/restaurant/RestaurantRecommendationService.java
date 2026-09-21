@@ -1,5 +1,8 @@
 package com.travel.restaurant;
 
+import com.travel.global.util.BedrockJson;
+import com.travel.global.util.RecommendationMath;
+
 import com.travel.external.bedrock.BedrockClient;
 import com.travel.restaurant.data.RestaurantData;
 import com.travel.restaurant.data.RestaurantMenuData;
@@ -10,6 +13,7 @@ import com.travel.restaurant.repository.RestaurantRepository;
 import com.travel.trip.entity.FoodPreference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
@@ -30,6 +34,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class RestaurantRecommendationService {
+
+    @Value("${app.recommendation.bedrock-rerank-enabled:false}")
+    private boolean bedrockRerankEnabled;
 
     private static final Logger log =
             LoggerFactory.getLogger(
@@ -156,6 +163,14 @@ public class RestaurantRecommendationService {
                         request.resolvedFoodPreferences()
                 );
 
+        List<RestaurantData> trustedRestaurants = categoryMatched.stream()
+                .filter(this::hasTrustworthyPublicData)
+                .toList();
+
+        if (trustedRestaurants.size() >= Math.min(limit, 8)) {
+            categoryMatched = trustedRestaurants;
+        }
+
         if (categoryMatched.isEmpty()) {
 
             return new RestaurantRecommendResponse(
@@ -242,13 +257,9 @@ public class RestaurantRecommendationService {
 
         try {
 
-            aiDecisions =
-                    rerankWithBedrock(
-                            request,
-                            aiCandidates,
-                            menuMap,
-                            limit
-                    );
+            aiDecisions = bedrockRerankEnabled
+                    ? rerankWithBedrock(request, aiCandidates, menuMap, limit)
+                    : List.of();
 
         } catch (Exception e) {
 
@@ -342,7 +353,7 @@ public class RestaurantRecommendationService {
     ) {
 
         double distanceKm =
-                calculateDistanceKm(
+                RecommendationMath.distanceKm(
                         request.originLatitude(),
                         request.originLongitude(),
                         restaurant.latitude(),
@@ -361,7 +372,7 @@ public class RestaurantRecommendationService {
                 );
 
         double ratingScore =
-                clamp(
+                RecommendationMath.clamp(
                         bayesianRating
                                 / RATING_SCALE,
                         0.0,
@@ -379,45 +390,53 @@ public class RestaurantRecommendationService {
                         restaurant
                 );
 
+        double reliabilityScore = calculateReliabilityScore(restaurant);
+
         /*
          * FOOD 여행이면:
          *
-         * 평점/리뷰 Bayesian 품질 65%
-         * 거리 10%
-         * 제주 로컬성 25%
+             * 평점/리뷰 Bayesian 품질 55%
+             * 거리 10%
+             * 제주 로컬성 20%
+             * 공개 정보 신뢰도 15%
          *
          * 일반 여행이면:
          *
-         * 평점/리뷰 Bayesian 품질 65%
-         * 거리 15%
-         * 제주 로컬성 20%
+             * 평점/리뷰 Bayesian 품질 55%
+             * 거리 15%
+             * 제주 로컬성 15%
+             * 공개 정보 신뢰도 15%
          */
         double baseScore;
 
         if (request.foodFocused()) {
 
             baseScore =
-                    ratingScore * 0.65
+                    ratingScore * 0.55
                             +
                             distanceScore * 0.10
                             +
-                            localScore * 0.25;
+                            localScore * 0.20
+                            +
+                            reliabilityScore * 0.15;
 
         } else {
 
             baseScore =
-                    ratingScore * 0.65
+                    ratingScore * 0.55
                             +
                             distanceScore * 0.15
                             +
-                            localScore * 0.20;
+                            localScore * 0.15
+                            +
+                            reliabilityScore * 0.15;
         }
 
         return new ScoredRestaurant(
 
                 restaurant,
 
-                round(
+                RecommendationMath.round(
                         distanceKm,
                         2
                 ),
@@ -432,12 +451,40 @@ public class RestaurantRecommendationService {
 
                 localScore,
 
-                clamp(
+                reliabilityScore,
+
+                RecommendationMath.clamp(
                         baseScore,
                         0.0,
                         1.0
                 )
         );
+    }
+
+    private boolean hasTrustworthyPublicData(RestaurantData restaurant) {
+        double rating = restaurant.rating() == null ? 0.0 : restaurant.rating();
+        int reviews = restaurant.reviewCount() == null ? 0 : restaurant.reviewCount();
+        return (rating >= 3.5 && reviews >= 10) || reviews >= 100;
+    }
+
+    private double calculateReliabilityScore(RestaurantData restaurant) {
+        double score = 0.0;
+        if (validRating(restaurant.rating())) {
+            score += 0.25;
+        }
+        int reviews = restaurant.reviewCount() == null ? 0 : Math.max(0, restaurant.reviewCount());
+        score += Math.min(0.35, Math.log1p(reviews) / Math.log1p(1000.0) * 0.35);
+        if (restaurant.representativeImageUrl() != null && !restaurant.representativeImageUrl().isBlank()) {
+            score += 0.15;
+        }
+        if (restaurant.businessHours() != null && !restaurant.businessHours().isBlank()) {
+            score += 0.15;
+        }
+        if ((restaurant.summary() != null && !restaurant.summary().isBlank())
+                || (restaurant.tags() != null && !restaurant.tags().isBlank())) {
+            score += 0.10;
+        }
+        return RecommendationMath.clamp(score, 0.0, 1.0);
     }
 
     /**
@@ -493,7 +540,7 @@ public class RestaurantRecommendationService {
                                 *
                                 globalAverageRating;
 
-        return clamp(
+        return RecommendationMath.clamp(
                 weightedRating,
                 0.0,
                 RATING_SCALE
@@ -540,7 +587,7 @@ public class RestaurantRecommendationService {
                         ? 60.0
                         : 35.0;
 
-        return clamp(
+        return RecommendationMath.clamp(
                 1.0
                         -
                         (
@@ -723,7 +770,7 @@ public class RestaurantRecommendationService {
 
             candidate.put(
                     "bayesianRating",
-                    round(
+                    RecommendationMath.round(
                             scored.bayesianRating(),
                             2
                     )
@@ -757,7 +804,7 @@ public class RestaurantRecommendationService {
 
             candidate.put(
                     "baseScore",
-                    round(
+                    RecommendationMath.round(
                             scored.baseScore()
                                     * 100.0,
                             2
@@ -906,7 +953,7 @@ public class RestaurantRecommendationService {
     ) throws JacksonException {
 
         String json =
-                extractJson(
+                BedrockJson.extractObject(
                         response
                 );
 
@@ -964,7 +1011,7 @@ public class RestaurantRecommendationService {
             }
 
             double aiScore =
-                    clamp(
+                    RecommendationMath.clamp(
                             item.path(
                                     "aiScore"
                             ).asDouble(50.0),
@@ -1183,30 +1230,30 @@ public class RestaurantRecommendationService {
 
                 scored.estimatedDriveMinutes(),
 
-                round(
+                RecommendationMath.round(
                         scored.bayesianRating(),
                         2
                 ),
 
-                round(
+                RecommendationMath.round(
                         scored.ratingScore()
                                 * 100.0,
                         2
                 ),
 
-                round(
+                RecommendationMath.round(
                         scored.distanceScore()
                                 * 100.0,
                         2
                 ),
 
-                round(
+                RecommendationMath.round(
                         scored.localScore()
                                 * 100.0,
                         2
                 ),
 
-                round(
+                RecommendationMath.round(
                         scored.baseScore()
                                 * 100.0,
                         2
@@ -1214,7 +1261,7 @@ public class RestaurantRecommendationService {
 
                 finalRestaurant.aiScore(),
 
-                round(
+                RecommendationMath.round(
                         finalRestaurant.finalScore()
                                 * 100.0,
                         2
@@ -1278,66 +1325,6 @@ public class RestaurantRecommendationService {
         );
     }
 
-    private double calculateDistanceKm(
-            double lat1,
-            double lon1,
-            double lat2,
-            double lon2
-    ) {
-
-        final double earthRadiusKm =
-                6371.0;
-
-        double latDistance =
-                Math.toRadians(
-                        lat2 - lat1
-                );
-
-        double lonDistance =
-                Math.toRadians(
-                        lon2 - lon1
-                );
-
-        double a =
-                Math.sin(
-                        latDistance / 2.0
-                )
-                        *
-                        Math.sin(
-                                latDistance / 2.0
-                        )
-
-                        +
-
-                        Math.cos(
-                                Math.toRadians(lat1)
-                        )
-                                *
-                                Math.cos(
-                                        Math.toRadians(lat2)
-                                )
-                                *
-                                Math.sin(
-                                        lonDistance / 2.0
-                                )
-                                *
-                                Math.sin(
-                                        lonDistance / 2.0
-                                );
-
-        double c =
-                2.0
-                        *
-                        Math.atan2(
-                                Math.sqrt(a),
-                                Math.sqrt(
-                                        1.0 - a
-                                )
-                        );
-
-        return earthRadiusKm * c;
-    }
-
     private boolean containsAny(
             String text,
             List<String> keywords
@@ -1378,75 +1365,6 @@ public class RestaurantRecommendationService {
         );
     }
 
-    private String extractJson(
-            String value
-    ) {
-
-        if (value == null) {
-
-            throw new IllegalStateException(
-                    "Bedrock 응답이 없습니다."
-            );
-        }
-
-        String trimmed =
-                value.trim();
-
-        int start =
-                trimmed.indexOf(
-                        '{'
-                );
-
-        int end =
-                trimmed.lastIndexOf(
-                        '}'
-                );
-
-        if (start < 0
-                || end < start) {
-
-            throw new IllegalStateException(
-                    "Bedrock 응답에서 JSON을 찾을 수 없습니다."
-            );
-        }
-
-        return trimmed.substring(
-                start,
-                end + 1
-        );
-    }
-
-    private double clamp(
-            double value,
-            double min,
-            double max
-    ) {
-
-        return Math.max(
-                min,
-                Math.min(
-                        max,
-                        value
-                )
-        );
-    }
-
-    private double round(
-            double value,
-            int digits
-    ) {
-
-        double scale =
-                Math.pow(
-                        10,
-                        digits
-                );
-
-        return Math.round(
-                value * scale
-        ) / scale;
-    }
-
     private record ScoredRestaurant(
 
             RestaurantData restaurant,
@@ -1462,6 +1380,8 @@ public class RestaurantRecommendationService {
             double distanceScore,
 
             double localScore,
+
+            double reliabilityScore,
 
             double baseScore
 

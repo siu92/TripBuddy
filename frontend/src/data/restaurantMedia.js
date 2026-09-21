@@ -2,6 +2,21 @@ const VISIT_JEJU_FLOWER_MEAL = "https://api.cdn.visitjeju.net/photomng/imgpath/2
 
 const CURATED_RESTAURANT_MEDIA = [
   {
+    match: /(?:애월.*갈치.*암행어사|암행어사)/,
+    representativeImageUrl: "https://media.triple.guide/triple-cms/c_limit%2Cf_auto%2Ch_2048%2Cw_2048/2963688a-9eae-46ba-9e30-3f052ba9b256.jpeg",
+    imageUrls: [
+      "https://media.triple.guide/triple-cms/c_limit%2Cf_auto%2Ch_2048%2Cw_2048/2963688a-9eae-46ba-9e30-3f052ba9b256.jpeg",
+      "https://media.triple.guide/triple-cms/c_limit%2Cf_auto%2Ch_2048%2Cw_2048/9ae48606-6da1-4289-9a3d-657044241401.jpeg",
+    ],
+  },
+  {
+    match: /김희선.*(?:제주)?(?:흑돼지)?두루치기|김희선제주두루치기/,
+    representativeImageUrl: "https://media.triple.guide/triple-cms/c_limit%2Cf_auto%2Ch_2048%2Cw_2048/60e9f80e-6306-4e7e-b19a-3f724d92c317.jpeg",
+    imageUrls: [
+      "https://media.triple.guide/triple-cms/c_limit%2Cf_auto%2Ch_2048%2Cw_2048/60e9f80e-6306-4e7e-b19a-3f724d92c317.jpeg",
+    ],
+  },
+  {
     match: /^꽃밥$/,
     representativeImageUrl: VISIT_JEJU_FLOWER_MEAL,
     imageUrls: [

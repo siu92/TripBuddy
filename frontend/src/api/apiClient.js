@@ -5,9 +5,13 @@
 
 const VITE_ENV = import.meta.env ?? {};
 
+const CONFIGURED_BASE_URL = String(VITE_ENV.VITE_API_BASE_URL ?? "").trim();
+const IS_LOCAL_API_URL = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(
+  CONFIGURED_BASE_URL,
+);
+
 const DEFAULT_BASE_URL =
-  VITE_ENV.VITE_API_BASE_URL ??
-  (VITE_ENV.DEV ? "http://localhost:8080" : "");
+  VITE_ENV.PROD && IS_LOCAL_API_URL ? "" : CONFIGURED_BASE_URL;
 
 const ACCESS_TOKEN_KEY = "tripbuddy.accessToken";
 const LEGACY_ACCESS_TOKEN_KEY = "accessToken";

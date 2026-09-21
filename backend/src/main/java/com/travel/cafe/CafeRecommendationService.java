@@ -1,5 +1,8 @@
 package com.travel.cafe;
 
+import com.travel.global.util.BedrockJson;
+import com.travel.global.util.RecommendationMath;
+
 import com.travel.cafe.CafeCandidateService.CafeCandidatePool;
 import com.travel.cafe.CafeCandidateService.CafeScoredCandidate;
 import com.travel.cafe.data.CafeData;
@@ -12,6 +15,7 @@ import com.travel.cafe.repository.CafeRepository;
 import com.travel.external.bedrock.BedrockClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
@@ -30,6 +34,9 @@ import java.util.Set;
 
 @Service
 public class CafeRecommendationService {
+
+    @Value("${app.recommendation.bedrock-rerank-enabled:false}")
+    private boolean bedrockRerankEnabled;
 
     private static final Logger log =
             LoggerFactory.getLogger(
@@ -161,13 +168,9 @@ public class CafeRecommendationService {
 
         try {
 
-            aiDecisions =
-                    rerankWithBedrock(
-                            request,
-                            candidates,
-                            menuMap,
-                            limit
-                    );
+            aiDecisions = bedrockRerankEnabled
+                    ? rerankWithBedrock(request, candidates, menuMap, limit)
+                    : List.of();
 
         } catch (Exception e) {
 
@@ -276,7 +279,7 @@ public class CafeRecommendationService {
 
             item.put(
                     "bayesianRating",
-                    round(
+                    RecommendationMath.round(
                             scored.bayesianRating(),
                             2
                     )
@@ -318,7 +321,7 @@ public class CafeRecommendationService {
 
             item.put(
                     "baseScore",
-                    round(
+                    RecommendationMath.round(
                             scored.baseScore()
                                     * 100.0,
                             2
@@ -468,7 +471,7 @@ public class CafeRecommendationService {
     ) throws JacksonException {
 
         String json =
-                extractJson(
+                BedrockJson.extractObject(
                         response
                 );
 
@@ -524,7 +527,7 @@ public class CafeRecommendationService {
             }
 
             double aiScore =
-                    clamp(
+                    RecommendationMath.clamp(
                             item.path(
                                     "aiScore"
                             ).asDouble(50.0),
@@ -767,32 +770,32 @@ public class CafeRecommendationService {
                         .toList(),
                 candidate.distanceKm(),
                 candidate.estimatedDriveMinutes(),
-                round(
+                RecommendationMath.round(
                         candidate.bayesianRating(),
                         2
                 ),
-                round(
+                RecommendationMath.round(
                         candidate.ratingScore()
                                 * 100.0,
                         2
                 ),
-                round(
+                RecommendationMath.round(
                         candidate.distanceScore()
                                 * 100.0,
                         2
                 ),
-                round(
+                RecommendationMath.round(
                         candidate.experienceScore()
                                 * 100.0,
                         2
                 ),
-                round(
+                RecommendationMath.round(
                         candidate.baseScore()
                                 * 100.0,
                         2
                 ),
                 aiScore,
-                round(
+                RecommendationMath.round(
                         finalScore
                                 * 100.0,
                         2
@@ -833,72 +836,6 @@ public class CafeRecommendationService {
                 0,
                 maxLength
         );
-    }
-
-    private String extractJson(
-            String response
-    ) {
-
-        if (response == null
-                || response.isBlank()) {
-
-            throw new IllegalStateException(
-                    "Bedrock 응답이 없습니다."
-            );
-        }
-
-        String trimmed =
-                response.trim();
-
-        int start =
-                trimmed.indexOf('{');
-
-        int end =
-                trimmed.lastIndexOf('}');
-
-        if (start < 0
-                || end < start) {
-
-            throw new IllegalStateException(
-                    "Bedrock 응답에서 JSON을 찾을 수 없습니다."
-            );
-        }
-
-        return trimmed.substring(
-                start,
-                end + 1
-        );
-    }
-
-    private double clamp(
-            double value,
-            double min,
-            double max
-    ) {
-
-        return Math.max(
-                min,
-                Math.min(
-                        max,
-                        value
-                )
-        );
-    }
-
-    private double round(
-            double value,
-            int digits
-    ) {
-
-        double scale =
-                Math.pow(
-                        10,
-                        digits
-                );
-
-        return Math.round(
-                value * scale
-        ) / scale;
     }
 
     private record AiDecision(

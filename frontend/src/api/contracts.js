@@ -261,53 +261,8 @@
  */
 
 export const API_ENDPOINTS = Object.freeze({
-  locations: {
-    regions: '/api/locations/regions',
-    districts: (regionCode) => `/api/locations/regions/${encodeURIComponent(regionCode)}/districts`,
-    search: '/api/locations/search',
-    geocode: '/api/locations/geocode',
-  },
-  journey: {
-    options: '/api/journey-options',
-  },
-  routing: {
-    route: '/api/routing/route',
-  },
   tourism: {
-    spots: '/api/tourism/spots',
-    restaurantEligibility: '/api/restaurants/eligibility',
-    restaurants: '/api/restaurants/search',
     restaurantDetail: (placeId) => `/api/restaurants/${encodeURIComponent(placeId)}`,
     cafeDetail: (placeId) => `/api/cafes/${encodeURIComponent(placeId)}`,
   },
-  offers: {
-    flights: '/api/offers/flights',
-    ktx: '/api/offers/ktx',
-    ferries: '/api/offers/ferries',
-    lodging: '/api/offers/lodging',
-    rentalCars: '/api/offers/rental-cars',
-  },
-  costs: {
-    estimate: '/api/costs/estimate',
-  },
-  fuel: {
-    average: '/api/fuel-prices/average',
-  },
-  plans: {
-    generate: '/api/trips/plans',
-    status: (planId) => `/api/trips/plans/${encodeURIComponent(planId)}`,
-    recalculate: (planId) => `/api/trips/plans/${encodeURIComponent(planId)}/recalculate`,
-    share: (planId) => `/api/trips/plans/${encodeURIComponent(planId)}/share`,
-  },
-});
-
-export const API_SOURCE_LABELS = Object.freeze({
-  mock: '시연용 더미 데이터',
-  naver: '네이버 지도 연동',
-  tmap: '티맵 경로 연동',
-  kto: '한국관광공사 관광정보 연동',
-  license: '인허가·영업상태 확인 연동',
-  foodsafety: '식품의약품안전처 식품접객업정보 연동',
-  opinet: '오피넷 유가정보 연동',
-  partner: '제휴사 제공 데이터',
 });

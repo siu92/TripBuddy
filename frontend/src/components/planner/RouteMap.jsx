@@ -4,6 +4,7 @@ import { locationLabel } from "../../data/mockData";
 import { loadKakaoMapsSdk } from "../../lib/kakaoMap";
 import { loadKakaoNaviSdk, startKakaoNavigation } from "../../lib/kakaoNavi";
 import { apiClient } from "../../api/apiClient";
+import { isAirportEvent, isAirportRouteSegment } from "../../utils/routeFilters";
 
 const ROUTE_SEGMENT_COLORS = [
   "#0b766d",
@@ -56,7 +57,7 @@ function uniqueStops(stops = []) {
 }
 
 function stopsFromSegments(segments = []) {
-  const localSegments = segments.filter((segment) => segment?.mode !== "AIR");
+  const localSegments = segments.filter((segment) => !isAirportRouteSegment(segment));
   if (!localSegments.length) return [];
 
   const stops = [];
@@ -87,6 +88,7 @@ function stopsFromDayPlan(selectedDay) {
   return uniqueStops(
     (selectedDay?.[2] || [])
       .filter((event) => event?.[6]?.isGeographical !== false)
+      .filter((event) => !isAirportEvent(event?.[2], event?.[6]))
       .filter((event) => !/체크인|체크아웃|준비|짐 정리|탑승|귀가|오는 편/.test(event?.[2] || ""))
       .map(([, , name, , , , metadata = {}]) => ({
         name: name?.trim(),
@@ -586,7 +588,7 @@ function RouteMap({ activeDay, dayPlans, destinationLocation, originLocation, ro
     };
   }, [coloredSegments, destinationContext, selectedDay]);
 
-  const localSegments = coloredSegments.filter((segment) => segment?.mode !== "AIR");
+  const localSegments = coloredSegments.filter((segment) => !isAirportRouteSegment(segment));
   const actualSegments = localSegments.filter((segment) =>
     String(segment?.routeProvider || "").startsWith("KAKAO_MOBILITY"),
   );
@@ -698,7 +700,7 @@ function RouteMap({ activeDay, dayPlans, destinationLocation, originLocation, ro
       <div className="route-map-frame">
         <KakaoRouteCanvas
           stops={route.stops}
-          segments={coloredSegments}
+          segments={localSegments}
           fallbackPoint={destinationLocation}
           selectedSegmentIndex={selectedSegmentIndex}
           onSegmentSelect={handleSegmentSelect}
@@ -801,7 +803,7 @@ function RouteMap({ activeDay, dayPlans, destinationLocation, originLocation, ro
           <div className="mobile-expanded-map-canvas">
             <KakaoRouteCanvas
               stops={route.stops}
-              segments={coloredSegments}
+              segments={localSegments}
               fallbackPoint={destinationLocation}
               selectedSegmentIndex={selectedSegmentIndex}
               onSegmentSelect={handleSegmentSelect}

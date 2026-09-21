@@ -299,7 +299,7 @@ export const transportName = (id, options) =>
   options.find((option) => option.id === id)?.title || "미선택";
 
 // API가 붙기 전에도 선택값에 따라 서로 다른 견적을 보여 주는 계산용 기준입니다.
-// 실서비스에서는 routingApi / costApi 응답으로 같은 출력 구조만 교체합니다.
+// 실서비스 연동 시에도 이 출력 구조를 유지해 화면 로직을 안정적으로 교체합니다.
 export const toRadians = (value) => (Number(value) * Math.PI) / 180;
 export const distanceBetween = (from, to) => {
   if (!from || !to || from.latitude == null || to.latitude == null) return 180;
@@ -2408,6 +2408,12 @@ export const applyPlanEdits = (plans, edits) => {
             bookingUrl: replacement.bookingUrl ?? event[6]?.bookingUrl ?? null,
             latitude: replacement.latitude ?? event[6]?.latitude ?? null,
             longitude: replacement.longitude ?? event[6]?.longitude ?? null,
+            type: replacement.type ?? event[6]?.type ?? null,
+            placeId: replacement.placeId ?? event[6]?.placeId ?? null,
+            replacement:
+              replacement.placeId && replacement.type
+                ? { type: replacement.type, placeId: Number(replacement.placeId) }
+                : event[6]?.replacement ?? null,
             isGeographical: true,
           },
         ];

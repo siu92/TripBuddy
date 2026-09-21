@@ -170,7 +170,6 @@ function App() {
   const isMobile = useMediaQuery("(max-width: 760px)");
 
   const [isPlannerOpen, setIsPlannerOpen] = useState(false);
-  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   /*
@@ -375,6 +374,8 @@ function App() {
     addPlanStop,
     removePlanStop,
     reorderDayPlan,
+    resolvePlanStop,
+    savePlanChanges,
     itineraryEventCost,
     generate,
     openSavedTrip,
@@ -1478,11 +1479,11 @@ function App() {
 
                               <div>
 
-                                <span>
+                                <span className="stay-card-area">
                                   {stay.area}
                                 </span>
 
-                                <b>
+                                <b className="stay-card-name">
                                   {stay.name}
                                 </b>
 
@@ -1518,14 +1519,20 @@ function App() {
                                 </small>
 
 
-                                <strong>
-                                  {stay.priceText ||
-                                    (
-                                      stay.priceAvg != null
-                                        ? `평균 ${money(stay.priceAvg)}원`
-                                        : "가격 정보 확인"
-                                    )}
-                                </strong>
+                                <div className="stay-card-price">
+                                  <span className="stay-card-price-copy">
+                                    <small>{stay.priceAvg != null ? "1박 예상가" : "숙박 예상가"}</small>
+                                    <em>세금 포함 예상</em>
+                                  </span>
+                                  <strong>
+                                    {stay.priceText ||
+                                      (
+                                        stay.priceAvg != null
+                                          ? `${money(stay.priceAvg)}원`
+                                          : "약 80,000원"
+                                      )}
+                                  </strong>
+                                </div>
 
                               </div>
 
@@ -1620,8 +1627,14 @@ function App() {
                 총 {travelers || 0}명 여행비 {money(total * (travelers || 0))}원
               </span>
             </div>
-            <button className="generate" type="button" onClick={() => setIsDisclaimerOpen(true)}>
-              AI 일정 생성 →
+            <button
+              className="generate"
+              type="button"
+              disabled={planning}
+              aria-busy={planning}
+              onClick={() => generate()}
+            >
+              {planning ? "일정 생성 중…" : "AI 일정 생성 →"}
             </button>
             <button className="reset-draft-btn" type="button" onClick={() => {
               if (window.confirm("입력한 여행 조건을 모두 지우고 새로 시작할까요?")) resetTripDraft();
@@ -1642,7 +1655,7 @@ function App() {
           </aside>
         </div>
         </details>
-        {isMobile ? <div className="mobile-planner-bottom"><span><small>현재 예상 1인 경비</small><b>{money(total)}원</b></span><button type="button" onClick={() => setIsDisclaimerOpen(true)}>여행 만들기 →</button></div> : null}
+        {isMobile ? <div className="mobile-planner-bottom"><span><small>현재 예상 1인 경비</small><b>{money(total)}원</b></span><button type="button" disabled={planning} aria-busy={planning} onClick={() => generate()}>{planning ? "생성 중…" : "여행 만들기 →"}</button></div> : null}
       </section>
       </>}
       {(!isMobile || !isPlannerOpen) && <>
@@ -1685,26 +1698,6 @@ function App() {
       </section>
       <CommerceShowcase />
       </>}
-      {isDisclaimerOpen && (
-        <div className="ai-modal-backdrop disclaimer-backdrop" role="presentation" onMouseDown={(event) => {
-          if (event.target === event.currentTarget) setIsDisclaimerOpen(false);
-        }}>
-          <section className="ai-modal disclaimer-modal" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title">
-            <button type="button" className="modal-close" onClick={() => setIsDisclaimerOpen(false)} aria-label="안내 닫기"><X size={18} strokeWidth={1.8} aria-hidden="true" /></button>
-            <p>AI TRIP ESTIMATE</p>
-            <h3 id="disclaimer-title">⚠️ AI 예상 경비 및 일정 안내</h3>
-            <ul>
-              <li>AI가 계산한 금액은 현장 상황에 따라 실제와 상이할 수 있습니다.</li>
-              <li>식비는 평균 예상 비용으로 산정되었으며, 주문 메뉴와 수량에 따라 달라집니다.</li>
-              <li>실제 운항·장소 정보 등을 활용하되, 항공·숙박·렌터카 가격에는 추정값과 시연용 데이터가 포함됩니다. 실시간 확정 판매가가 아니므로 예약처에서 최종 요금을 확인해 주세요.</li>
-            </ul>
-            <button type="button" className="transition-primary" onClick={() => {
-              setIsDisclaimerOpen(false);
-              generate();
-            }}>동의하고 AI 일정 생성하기 →</button>
-          </section>
-        </div>
-      )}
       {showScrollTop && <button className="scroll-to-top" type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>↑ TOP</button>}
       {planning && (
         <div className="planning-overlay" role="status" aria-live="polite">
@@ -1774,6 +1767,8 @@ function App() {
           onChangeStop={changePlanStop}
           onAddStop={addPlanStop}
           onRemoveStop={removePlanStop}
+          onResolveStop={resolvePlanStop}
+          onSavePlan={savePlanChanges}
           onReorderStops={reorderDayPlan}
           onOpenStay={() => setStayOpen(true)}
           onOpenStayComparison={() => setStayChangePromptOpen(true)}

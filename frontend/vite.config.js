@@ -42,14 +42,4 @@ export default defineConfig({
       },
     }),
   ],
-  build: {
-    rollupOptions: {
-      input: {
-        main: "index.html",
-        "team-development-guide": "team-development-guide.html",
-        "logo-recommendations-preview": "logo-recommendations-preview.html",
-        "tripbuddy-brand-theme-preview": "tripbuddy-brand-theme-preview.html",
-      },
-    },
-  },
 });

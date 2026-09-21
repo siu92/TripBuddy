@@ -1,5 +1,7 @@
 package com.travel.cafe;
 
+import com.travel.global.util.RecommendationMath;
+
 import com.travel.cafe.data.CafeData;
 import com.travel.cafe.repository.CafeRepository;
 import org.springframework.cache.annotation.Cacheable;
@@ -168,7 +170,7 @@ public class CafeCandidateService {
     ) {
 
         double distanceKm =
-                calculateDistanceKm(
+                RecommendationMath.distanceKm(
                         originLatitude,
                         originLongitude,
                         cafe.latitude(),
@@ -187,7 +189,7 @@ public class CafeCandidateService {
                 );
 
         double ratingScore =
-                clamp(
+                RecommendationMath.clamp(
                         bayesianRating
                                 /
                                 RATING_SCALE,
@@ -242,7 +244,7 @@ public class CafeCandidateService {
 
         return new CafeScoredCandidate(
                 cafe,
-                round(
+                RecommendationMath.round(
                         distanceKm,
                         2
                 ),
@@ -251,7 +253,7 @@ public class CafeCandidateService {
                 ratingScore,
                 distanceScore,
                 experienceScore,
-                clamp(
+                RecommendationMath.clamp(
                         baseScore,
                         0.0,
                         1.0
@@ -374,7 +376,7 @@ public class CafeCandidateService {
                                 *
                                 globalAverageRating;
 
-        return clamp(
+        return RecommendationMath.clamp(
                 result,
                 0.0,
                 RATING_SCALE
@@ -425,7 +427,7 @@ public class CafeCandidateService {
                         ? 60.0
                         : 35.0;
 
-        return clamp(
+        return RecommendationMath.clamp(
                 1.0
                         -
                         (
@@ -554,102 +556,6 @@ public class CafeCandidateService {
                         *
                         60.0
         );
-    }
-
-    private double calculateDistanceKm(
-
-            double lat1,
-
-            double lon1,
-
-            double lat2,
-
-            double lon2
-
-    ) {
-
-        final double earthRadiusKm =
-                6371.0;
-
-        double latDistance =
-                Math.toRadians(
-                        lat2 - lat1
-                );
-
-        double lonDistance =
-                Math.toRadians(
-                        lon2 - lon1
-                );
-
-        double a =
-                Math.sin(
-                        latDistance / 2
-                )
-                        *
-                        Math.sin(
-                                latDistance / 2
-                        )
-
-                        +
-
-                        Math.cos(
-                                Math.toRadians(lat1)
-                        )
-                                *
-                                Math.cos(
-                                        Math.toRadians(lat2)
-                                )
-                                *
-                                Math.sin(
-                                        lonDistance / 2
-                                )
-                                *
-                                Math.sin(
-                                        lonDistance / 2
-                                );
-
-        double c =
-                2
-                        *
-                        Math.atan2(
-                                Math.sqrt(a),
-                                Math.sqrt(
-                                        1 - a
-                                )
-                        );
-
-        return earthRadiusKm * c;
-    }
-
-    private double clamp(
-            double value,
-            double min,
-            double max
-    ) {
-
-        return Math.max(
-                min,
-                Math.min(
-                        max,
-                        value
-                )
-        );
-    }
-
-    private double round(
-            double value,
-            int digits
-    ) {
-
-        double scale =
-                Math.pow(
-                        10,
-                        digits
-                );
-
-        return Math.round(
-                value * scale
-        ) / scale;
     }
 
     public record CafeCandidatePool(
