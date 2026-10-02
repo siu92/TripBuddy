@@ -105,6 +105,16 @@ public class Trip {
     )
     private LocalTransportMode localTransportMode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(
+            name = "fuel_type",
+            length = 20
+    )
+    private VehicleFuelType fuelType;
+
+    @Column(name = "vehicle_efficiency_kmpl")
+    private Double vehicleEfficiencyKmpl;
+
     @Column(nullable = false)
     private Long budget;
 
@@ -131,6 +141,9 @@ public class Trip {
     )
     private Set<TripPreference> preferences =
             new HashSet<>();
+
+    @Column(length = 1000)
+    private String prompt;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
@@ -210,11 +223,14 @@ public class Trip {
             int peopleCount,
             MainTransportMode mainTransportMode,
             LocalTransportMode localTransportMode,
+            VehicleFuelType fuelType,
+            Double vehicleEfficiencyKmpl,
             Long budget,
             Long mealBudgetPerPersonPerDay,
             TripPace pace,
             Set<TripPreference> preferences,
-            Set<FoodPreference> foodPreferences
+            Set<FoodPreference> foodPreferences,
+            String prompt
     ) {
         this.user = user;
 
@@ -240,6 +256,9 @@ public class Trip {
         this.localTransportMode =
                 localTransportMode;
 
+        this.fuelType = fuelType;
+        this.vehicleEfficiencyKmpl = vehicleEfficiencyKmpl;
+
         this.budget = budget;
 
         this.mealBudgetPerPersonPerDay =
@@ -256,6 +275,11 @@ public class Trip {
                 foodPreferences == null
                         ? new HashSet<>()
                         : new HashSet<>(foodPreferences);
+
+        this.prompt =
+                prompt == null || prompt.isBlank()
+                        ? null
+                        : prompt.trim();
     }
 
     public void selectAccommodation(

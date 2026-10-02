@@ -27,6 +27,7 @@ import com.travel.trip.plan.repository.TripPlanItemRepository;
 import com.travel.trip.plan.type.TripPlanItemType;
 import com.travel.trip.repository.TransportSegmentRepository;
 import com.travel.trip.repository.TripRepository;
+import com.travel.trip.service.FuelCostService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +38,10 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -54,6 +57,7 @@ public class TripPlanService {
     private final TripPlanBedrockService bedrockService;
     private final TripPlanSchedulePostProcessor schedulePostProcessor;
     private final RoutingService routingService;
+    private final FuelCostService fuelCostService;
 
     public TripPlanService(
             TripRepository tripRepository,
@@ -62,7 +66,8 @@ public class TripPlanService {
             TripPlanCandidateService candidateService,
             TripPlanBedrockService bedrockService,
             TripPlanSchedulePostProcessor schedulePostProcessor,
-            RoutingService routingService
+            RoutingService routingService,
+            FuelCostService fuelCostService
     ) {
         this.tripRepository =
                 tripRepository;
@@ -77,6 +82,8 @@ public class TripPlanService {
         this.schedulePostProcessor = schedulePostProcessor;
         this.routingService =
                 routingService;
+        this.fuelCostService =
+                fuelCostService;
     }
 
     @Transactional
@@ -155,13 +162,19 @@ public class TripPlanService {
         days = schedulePostProcessor.fillLongIdleGaps(trip, candidatePool, days);
         days = schedulePostProcessor.releaseNightReturnDeadlines(days);
         days = reflowPlanTimesWithActualRoutes(trip, days);
-        days = enforceReturnFlightDeadline(trip, days, false);
+        days = enforceReturnFlightDeadline(trip, candidatePool, days, false);
         days = schedulePostProcessor.fillLastDayByActualSlack(trip, candidatePool, days);
         days = reflowPlanTimesWithActualRoutes(trip, days);
-        days = enforceReturnFlightDeadline(trip, days, true);
+        days = enforceReturnFlightDeadline(trip, candidatePool, days, true);
         days = enforceFirstDaySingleAccommodationAtEnd(days);
         days = removeRedundantConsecutiveAccommodationStops(days);
         days = schedulePostProcessor.normalizeMealRoleAfterRouting(days);
+
+        validatePromptDayConstraintsPreserved(
+                trip,
+                candidatePool,
+                days
+        );
 
         persistPlanItems(
                 trip,
@@ -375,13 +388,38 @@ public class TripPlanService {
         return segment.getDurationMinutes();
     }
 
-    /** 항공편은 이동시키지 않는다. 마감 초과 시 선택 일정을 뒤에서부터 제거한다. */
+    /**
+     * 기존 단위 테스트/호출 호환용. 프롬프트 보호가 필요 없는 경우의 기존 동작이다.
+     */
     private List<TripPlanDayResponse> enforceReturnFlightDeadline(
             Trip trip, List<TripPlanDayResponse> days, boolean useActualArrival
+    ) {
+        return enforceReturnFlightDeadline(
+                trip,
+                null,
+                days,
+                useActualArrival
+        );
+    }
+
+    /** 항공편은 이동시키지 않는다. 마감 초과 시 선택 일정을 뒤에서부터 제거한다. */
+    private List<TripPlanDayResponse> enforceReturnFlightDeadline(
+            Trip trip,
+            TripPlanCandidatePool candidatePool,
+            List<TripPlanDayResponse> days,
+            boolean useActualArrival
     ) {
         List<TripPlanDayResponse> result = new ArrayList<>();
         for (TripPlanDayResponse day : days) {
             List<TripPlanItemResponse> items = new ArrayList<>(day.items());
+            Set<Long> promptRequiredAttractionIds =
+                    candidatePool == null
+                            ? Set.of()
+                            : promptRequiredAttractionIds(
+                            trip,
+                            candidatePool,
+                            day.dayNumber()
+                    );
             int airportIndex = -1;
             for (int i = 0; i < items.size(); i++) {
                 if (isReturnDepartureAirport(items.get(i))) { airportIndex = i; break; }
@@ -401,7 +439,15 @@ public class TripPlanService {
 
                 int removable = -1;
                 for (int i = airportIndex - 1; i >= 0; i--) {
-                    TripPlanItemType type = items.get(i).type();
+                    TripPlanItemResponse candidate = items.get(i);
+                    TripPlanItemType type = candidate.type();
+
+                    if (type == TripPlanItemType.ATTRACTION
+                            && candidate.placeId() != null
+                            && promptRequiredAttractionIds.contains(candidate.placeId())) {
+                        continue;
+                    }
+
                     if (type == TripPlanItemType.ATTRACTION || type == TripPlanItemType.CAFE
                             || type == TripPlanItemType.RESTAURANT) { removable = i; break; }
                 }
@@ -430,6 +476,101 @@ public class TripPlanService {
             result.add(new TripPlanDayResponse(day.dayNumber(), day.date(), applyOrders(items), List.of()));
         }
         return result;
+    }
+
+    private Set<Long> promptRequiredAttractionIds(
+            Trip trip,
+            TripPlanCandidatePool candidatePool,
+            int dayNumber
+    ) {
+        if (trip.getPrompt() == null || trip.getPrompt().isBlank()) {
+            return Set.of();
+        }
+
+        int totalDays = (int) ChronoUnit.DAYS.between(
+                trip.getStartDate(),
+                trip.getEndDate()
+        ) + 1;
+
+        List<TripPromptDayConstraintParser.NamedAttraction> candidates =
+                candidatePool.attractions().stream()
+                        .map(item -> new TripPromptDayConstraintParser.NamedAttraction(
+                                item.id(),
+                                item.name()
+                        ))
+                        .toList();
+
+        Set<Long> result = new HashSet<>();
+        TripPromptDayConstraintParser.parse(
+                        trip.getPrompt(),
+                        totalDays,
+                        candidates
+                ).stream()
+                .filter(item -> item.dayNumber() == dayNumber)
+                .map(TripPromptDayConstraintParser.DayConstraint::attractionId)
+                .forEach(result::add);
+
+        return result;
+    }
+
+    private void validatePromptDayConstraintsPreserved(
+            Trip trip,
+            TripPlanCandidatePool candidatePool,
+            List<TripPlanDayResponse> days
+    ) {
+        if (trip.getPrompt() == null || trip.getPrompt().isBlank()) {
+            return;
+        }
+
+        int totalDays = (int) ChronoUnit.DAYS.between(
+                trip.getStartDate(),
+                trip.getEndDate()
+        ) + 1;
+
+        List<TripPromptDayConstraintParser.NamedAttraction> candidates =
+                candidatePool.attractions().stream()
+                        .map(item -> new TripPromptDayConstraintParser.NamedAttraction(
+                                item.id(),
+                                item.name()
+                        ))
+                        .toList();
+
+        for (TripPromptDayConstraintParser.DayConstraint constraint
+                : TripPromptDayConstraintParser.parse(
+                trip.getPrompt(),
+                totalDays,
+                candidates
+        )) {
+            long totalOccurrences = days.stream()
+                    .flatMap(day -> day.items().stream())
+                    .filter(item ->
+                            item.type() == TripPlanItemType.ATTRACTION
+                                    && constraint.attractionId().equals(item.placeId())
+                    )
+                    .count();
+
+            long requestedDayOccurrences = days.stream()
+                    .filter(day -> day.dayNumber() == constraint.dayNumber())
+                    .flatMap(day -> day.items().stream())
+                    .filter(item ->
+                            item.type() == TripPlanItemType.ATTRACTION
+                                    && constraint.attractionId().equals(item.placeId())
+                    )
+                    .count();
+
+            if (totalOccurrences != 1L || requestedDayOccurrences != 1L) {
+                throw new IllegalStateException(
+                        "최종 일정에서 프롬프트 관광지 일차 제약이 정확히 유지되지 않았습니다: "
+                                + constraint.attractionName()
+                                + " -> "
+                                + constraint.dayNumber()
+                                + "일차, totalOccurrences="
+                                + totalOccurrences
+                                + ", requestedDayOccurrences="
+                                + requestedDayOccurrences
+                );
+            }
+        }
     }
 
     private int resolveStayMinutes(TripPlanItemResponse item) {
@@ -1034,7 +1175,8 @@ public class TripPlanService {
                         calculateActualRouteCost(
                                 mode,
                                 distanceKm,
-                                route
+                                route,
+                                tripDay == null ? null : tripDay.getTrip()
                         );
 
                 LocalDateTime arrivalAt =
@@ -1105,11 +1247,20 @@ public class TripPlanService {
                         )
                 );
 
-        long cost =
-                mockTransportCost(
-                        mode,
-                        distanceKm
-                );
+        long cost = 0L;
+
+        if (
+                tripDay != null
+                        && (mode == SegmentTransportMode.RENTAL_CAR
+                        || mode == SegmentTransportMode.OWN_CAR)
+        ) {
+            Trip trip = tripDay.getTrip();
+            cost = fuelCostService.calculateFuelCost(
+                    trip == null ? null : trip.getFuelType(),
+                    trip == null ? null : trip.getVehicleEfficiencyKmpl(),
+                    distanceKm
+            );
+        }
 
         LocalDateTime arrivalAt =
                 departureAt == null
@@ -1239,7 +1390,8 @@ public class TripPlanService {
     private long calculateActualRouteCost(
             SegmentTransportMode mode,
             double distanceKm,
-            DrivingRouteResult route
+            DrivingRouteResult route,
+            Trip trip
     ) {
         if (mode == SegmentTransportMode.TAXI) {
             return route.taxiFare();
@@ -1249,10 +1401,21 @@ public class TripPlanService {
                 mode == SegmentTransportMode.RENTAL_CAR
                         || mode == SegmentTransportMode.OWN_CAR
         ) {
-            return mockTransportCost(
-                    mode,
+            /*
+             * 시간표 계산용 임시 segment(trip == null)는 비용이 필요 없다.
+             * 실제 저장 segment에서만 오피넷 유가를 반영한다.
+             */
+            if (trip == null) {
+                return 0L;
+            }
+
+            long fuelCost = fuelCostService.calculateFuelCost(
+                    trip.getFuelType(),
+                    trip.getVehicleEfficiencyKmpl(),
                     distanceKm
-            ) + route.tollFare();
+            );
+
+            return fuelCost + route.tollFare();
         }
 
         return 0L;
@@ -1366,31 +1529,6 @@ public class TripPlanService {
             case EXPRESS_BUS -> 70.0;
             case AIR -> 500.0;
         };
-    }
-
-    private long mockTransportCost(
-            SegmentTransportMode mode,
-            double distanceKm
-    ) {
-        if (
-                mode != SegmentTransportMode.RENTAL_CAR
-                        && mode != SegmentTransportMode.OWN_CAR
-        ) {
-            return 0L;
-        }
-
-        /*
-         * MVP 목업 유류비
-         * - 평균 연비: 10 km/L
-         * - 유가: 1,700원/L
-         * 실제 렌터카/유가 API 연동 시 교체한다.
-         */
-        double liters =
-                distanceKm / 10.0;
-
-        return Math.round(
-                liters * 1_700.0
-        );
     }
 
     private double haversineKm(

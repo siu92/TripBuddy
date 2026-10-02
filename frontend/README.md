@@ -85,7 +85,7 @@ npm run build
 node --test tests/*.test.mjs
 ```
 
-현재 기준으로 운영 빌드와 프론트 자동 테스트 29개가 통과합니다. 제주 대표 명소 15곳의 일정 요청 이름과 좌표도 자동으로 검사합니다. `npm run build:release`는 운영 번들에 `localhost:8080`이 포함되거나 카카오 지도 키가 빠지면 실패하므로, 잘못된 파일이 배포되는 것을 사전에 차단합니다.
+2026년 10월 2일 공개 자료 정리 시 프론트 자동 테스트 30개가 통과했습니다. 운영 빌드는 환경변수를 설정한 뒤 별도로 확인해야 합니다. 제주 대표 명소 15곳의 일정 요청 이름과 좌표도 자동으로 검사합니다. `npm run build:release`는 운영 번들에 `localhost:8080`이 포함되거나 카카오 지도 키가 빠지면 실패하므로, 잘못된 파일이 배포되는 것을 사전에 차단합니다.
 
 ## 백엔드 연결
 
@@ -102,14 +102,4 @@ API 규격과 데이터 연결 설명은 `BACKEND_INTEGRATION_GUIDE.md`를 참�
 
 숙소·관광지·식당·카페의 데이터 출처와 필터링 순서, 일정 생성 원리는 `RECOMMENDATION_DATA_LOGIC_KO.md`에 비전공자도 이해할 수 있는 표현으로 정리했습니다.
 
-## 백업 복원
 
-`Backup 파일`의 최신 ZIP을 원하는 위치에 압축 해제한 뒤 다음 순서로 복원합니다.
-
-```powershell
-npm install
-npm run build:release
-npm test
-```
-
-개인 환경값은 백업에 포함되지 않으므로 `.env.example`을 복사해 `.env.development.local`을 다시 작성합니다.

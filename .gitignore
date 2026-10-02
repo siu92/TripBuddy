@@ -1,0 +1,24 @@
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Generated files and local tools
+node_modules/
+dist/
+dist-ssr/
+.gradle/
+build/
+bin/
+.vscode/
+.idea/
+*.log
+
+# Local archives and backups
+*.zip
+Backup*/
+backup*/

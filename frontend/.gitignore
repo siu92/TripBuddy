@@ -29,3 +29,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local archives and backups
+*.zip
+Backup*/
+backup*/

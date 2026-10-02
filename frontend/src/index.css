@@ -6079,24 +6079,6 @@ footer .footer-legal {
 .full-timeline .stop-card-actions:not(.has-detail) .stop-change{
   grid-column:1/-1;
 }
-.full-timeline .stop-card-actions .stop-remove-action{
-  grid-column:1/-1;
-  justify-self:end;
-  width:auto!important;
-  min-height:22px;
-  padding:2px 3px!important;
-  border:0;
-  background:transparent;
-  box-shadow:none;
-  color:#8b7771;
-  font-size:8px;
-}
-.full-timeline .stop-card-actions .stop-remove-action:hover{
-  background:transparent;
-  color:#b34f38;
-  text-decoration:underline;
-  text-underline-offset:3px;
-}
 .full-timeline .itinerary-stop>div>p{
   max-width:calc(100% - 4px);
   margin-top:7px;
@@ -6327,3 +6309,223 @@ footer .footer-legal {
 .stop-composer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stop-composer-submit{min-height:45px;border:0;border-radius:11px;background:#087d73;color:#fff;font-size:11px;font-weight:900;cursor:pointer}
 .stop-composer-submit:disabled{cursor:default;opacity:.48}
+
+/* 생성된 일정 카드: 장소명, 예상 비용, 다음 이동 순서로 읽히도록 정리합니다. */
+.full-timeline .itinerary-stop.is-dining-stop{
+  border-left-color:#de9b6b;
+  background:linear-gradient(105deg,#fff 0%,#fffdfa 100%);
+}
+.full-timeline .itinerary-stop.is-attraction-stop{
+  border-left-color:#67b7a8;
+  background:linear-gradient(105deg,#fff 0%,#f9fdfb 100%);
+}
+.full-timeline .itinerary-stop.is-dining-stop>span{background:#fff1e7;color:#a65c35}
+.full-timeline .itinerary-stop.is-attraction-stop>span{background:#e7f6f1;color:#087e73}
+.full-timeline .stop-place-heading{
+  flex-wrap:wrap;
+  column-gap:30px;
+  row-gap:7px;
+}
+.full-timeline .stop-place-heading>b{
+  color:#153f3b;
+  font-size:17px;
+  font-weight:850;
+  letter-spacing:-.45px;
+}
+.full-timeline .stop-price-summary{
+  border-color:#ead4b8;
+  border-radius:9px;
+  background:#fffaf2;
+  box-shadow:0 3px 10px rgba(118,74,31,.06);
+}
+.full-timeline .stop-price-summary small{color:#946742}
+.full-timeline .stop-price-summary strong{color:#aa4f28}
+.full-timeline .itinerary-stop>div>p{
+  margin-top:10px;
+  color:#58756f;
+  line-height:1.6;
+}
+@media(min-width:761px){
+  .full-timeline .itinerary-stop{min-height:124px;padding-top:17px;padding-bottom:17px}
+  .full-timeline .stop-place-heading{column-gap:34px}
+  .full-timeline .stop-route-leg{top:auto;bottom:17px}
+  .full-timeline .stop-route-leg .route-leg-copy b{font-size:10px}
+  .full-timeline .stop-price-summary{
+    min-height:37px;
+    border-color:#ead4b8;
+    background:#fffaf2;
+    box-shadow:0 3px 10px rgba(118,74,31,.06);
+  }
+  .full-timeline .stop-price-summary small{color:#946742}
+  .full-timeline .stop-price-summary strong{color:#aa4f28}
+}
+@media(max-width:760px){
+  .plan-fullscreen.is-mobile-device .full-timeline .stop-place-heading{column-gap:12px;row-gap:6px}
+  .plan-fullscreen.is-mobile-device .full-timeline .stop-route-leg{top:auto;bottom:11px}
+}
+.plan-fullscreen.mobile-preview .full-timeline .stop-place-heading{column-gap:9px;row-gap:4px}
+.plan-fullscreen.mobile-preview .full-timeline .stop-route-leg{top:auto;bottom:9px}
+
+/* 편집 동작은 충분한 글자 크기와 명확한 중요도 차이로 구분합니다. */
+.full-timeline .stop-card-actions{gap:8px}
+.full-timeline .stop-card-actions button{
+  min-height:41px;
+  border-radius:10px;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:-.1px;
+}
+.full-timeline .stop-card-actions .stop-detail-action{
+  border-color:#b8d8cf;
+  background:#f5fbf8;
+  color:#145e58;
+}
+.full-timeline .stop-card-actions .stop-change{
+  border-color:#0c8075;
+  background:#0c8075;
+  color:#fff;
+  box-shadow:0 5px 11px rgba(12,128,117,.16);
+}
+.full-timeline .stop-card-actions .stop-change:hover{
+  border-color:#086c64;
+  background:#086c64;
+  color:#fff;
+}
+.full-timeline .stop-card-actions button:focus-visible{
+  outline:3px solid rgba(12,128,117,.24);
+  outline-offset:2px;
+}
+@media(min-width:761px){
+  .full-timeline .itinerary-stop>div{padding-right:230px}
+  .full-timeline .stop-card-actions{width:202px}
+}
+@media(max-width:760px){
+  .plan-fullscreen.is-mobile-device .full-timeline .stop-card-actions button{min-height:34px;font-size:9px}
+}
+.plan-fullscreen.mobile-preview .full-timeline .stop-card-actions button{min-height:29px;font-size:8px}
+
+/* 제외는 작은 보조 동작으로 카드 상단에 분리하고, 본 동작은 카드 중앙에 둡니다. */
+.full-timeline .itinerary-stop>.stop-remove-action{
+  position:absolute;
+  z-index:3;
+  top:11px;
+  right:13px;
+  display:grid;
+  width:27px;
+  height:27px;
+  place-items:center;
+  padding:0;
+  border:1px solid #ead8d2;
+  border-radius:8px;
+  background:#fffaf8;
+  color:#a36659;
+  box-shadow:0 2px 6px rgba(108,71,59,.05);
+  cursor:pointer;
+  transition:background .16s ease,border-color .16s ease,color .16s ease;
+}
+.full-timeline .itinerary-stop>.stop-remove-action:hover{
+  border-color:#dba89b;
+  background:#fff0eb;
+  color:#a64433;
+}
+.full-timeline .itinerary-stop>.stop-remove-action:focus-visible{
+  outline:3px solid rgba(166,68,51,.22);
+  outline-offset:2px;
+}
+@media(max-width:760px){
+  .plan-fullscreen.is-mobile-device .full-timeline .itinerary-stop>.stop-remove-action{
+    top:8px;
+    right:8px;
+    width:25px;
+    height:25px;
+  }
+}
+.plan-fullscreen.mobile-preview .full-timeline .itinerary-stop>.stop-remove-action{
+  top:7px;
+  right:7px;
+  width:22px;
+  height:22px;
+}
+
+/* 휴대폰 일정 카드는 데스크톱과 별개로 세로 밀도를 조정합니다. */
+@media(max-width:760px){
+  .plan-fullscreen.is-mobile-device .full-timeline .itinerary-stop{
+    min-height:118px;
+    padding:10px 9px;
+  }
+  .plan-fullscreen.is-mobile-device .full-timeline .stop-meta{margin-bottom:3px}
+  .plan-fullscreen.is-mobile-device .full-timeline .itinerary-stop>div>p{margin-top:5px}
+  .plan-fullscreen.is-mobile-device .full-timeline .stop-card-actions{
+    margin-top:6px;
+    padding-top:6px;
+  }
+  .plan-fullscreen.is-mobile-device .full-timeline .itinerary-stop>.stop-remove-action{
+    top:8px;
+    right:8px;
+  }
+}
+.plan-fullscreen.mobile-preview .full-timeline .itinerary-stop{
+  min-height:116px;
+  padding:9px;
+}
+.plan-fullscreen.mobile-preview .full-timeline .stop-meta{
+  min-height:18px;
+  margin-bottom:2px;
+}
+.plan-fullscreen.mobile-preview .full-timeline .itinerary-stop>div>p{margin-top:4px}
+.plan-fullscreen.mobile-preview .full-timeline .stop-card-actions{
+  margin-top:5px;
+  padding-top:5px;
+}
+
+/* 데스크톱 식당 상세는 후기와 장소 링크를 하단의 같은 동작 영역에 모읍니다. */
+.restaurant-detail-bottom-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  padding-top:18px;
+}
+.restaurant-detail-bottom-actions button,
+.restaurant-detail-bottom-actions a{
+  display:inline-flex;
+  min-height:42px;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:9px 12px;
+  border:1px solid #b9d9d1;
+  border-radius:10px;
+  background:#f3faf7;
+  color:#176f66;
+  font-size:10px;
+  font-weight:850;
+  text-decoration:none;
+  cursor:pointer;
+}
+.restaurant-detail-bottom-actions a{
+  border-color:#0c8075;
+  background:#0c8075;
+  color:#fff;
+}
+.restaurant-detail-bottom-actions button:hover{background:#e7f5ef}
+.restaurant-detail-bottom-actions a:hover{background:#096e65}
+.restaurant-detail-bottom-actions :is(button,a):focus-visible{
+  outline:3px solid rgba(12,128,117,.24);
+  outline-offset:2px;
+}
+
+/* 모바일 식당 상세는 외부 후기 링크에서 자연스럽게 마무리합니다. */
+@media(max-width:760px){
+  .restaurant-detail-bottom-actions{display:none}
+  .plan-fullscreen.is-mobile-device .restaurant-review-section{
+    padding-bottom:0;
+    border-bottom:0;
+  }
+  .plan-fullscreen.is-mobile-device .restaurant-detail-content{padding-bottom:max(20px,env(safe-area-inset-bottom))}
+}
+.plan-fullscreen.mobile-preview .restaurant-detail-bottom-actions{display:none}
+.plan-fullscreen.mobile-preview .restaurant-review-section{
+  padding-bottom:0;
+  border-bottom:0;
+}
+.plan-fullscreen.mobile-preview .restaurant-detail-content{padding-bottom:18px}

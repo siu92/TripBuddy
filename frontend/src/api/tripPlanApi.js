@@ -1,4 +1,5 @@
 import { apiClient } from "./apiClient.js";
+import { isAirportName } from "../utils/routeFilters.js";
 
 
 const ITEM_ICON = {
@@ -26,6 +27,36 @@ const LOCKED_TYPES = new Set([
   "CAR_RENTAL",
   "RENTAL_CAR",
 ]);
+
+
+const INTERNAL_PLAN_REASON_PATTERN =
+  /fallback|BACKEND_FALLBACK|BEDROCK|recommendationScore|최종 일정|시간 기준|동선 (?:반영|계산)|다시 계산|좌표 기반|이동 가능|AI가|필수 목적지/i;
+
+
+function userFacingPlanDetail(reason, category, type) {
+  const rawReason = String(reason || "").trim();
+
+  if (rawReason && !INTERNAL_PLAN_REASON_PATTERN.test(rawReason)) {
+    return rawReason;
+  }
+
+  switch (type) {
+    case "CAFE":
+      return "여행 동선과 선호를 고려해 추천한 카페예요.";
+
+    case "RESTAURANT":
+      return "여행 동선과 식사 시간을 고려해 추천한 식당이에요.";
+
+    case "ATTRACTION":
+      return "여행 동선을 고려해 추천한 관광지예요.";
+
+    case "ACCOMMODATION":
+      return "선택한 숙소";
+
+    default:
+      return String(category || "").trim();
+  }
+}
 
 
 /**
@@ -390,15 +421,11 @@ const eventId =
    * ==============================
    */
 
-  const detail =
-    event?.reason ||
-    event?.category ||
-    (
-      type ===
-      "ACCOMMODATION"
-        ? "선택한 숙소"
-        : ""
-    );
+  const detail = userFacingPlanDetail(
+    event?.reason,
+    event?.category,
+    type,
+  );
 
 
   return [
@@ -651,7 +678,7 @@ function normalizedDisplayName(value) {
 
 
 function isAirportDisplayName(value) {
-  return /공항|airport/i.test(String(value || ""));
+  return isAirportName(value);
 }
 
 
@@ -1388,9 +1415,21 @@ const isHardTransportAnchor = (event) => {
   const type = String(metadata.type || "").toUpperCase();
   const category = String(metadata.category || "").toUpperCase();
   const name = String(event?.[2] || "");
-  return ["DEPARTURE", "AIRPORT", "FLIGHT", "RENTAL", "RENT_CAR", "CAR_RENTAL", "RENTAL_CAR"].includes(type)
-    || /ARRIVAL_AIRPORT|DEPARTURE_AIRPORT/.test(category)
-    || /공항|항공|탑승|렌터카/.test(name);
+
+  if (["DEPARTURE", "AIRPORT", "FLIGHT", "RENTAL", "RENT_CAR", "CAR_RENTAL", "RENTAL_CAR"].includes(type)) {
+    return true;
+  }
+
+  if (/ARRIVAL_AIRPORT|DEPARTURE_AIRPORT/.test(category)) {
+    return true;
+  }
+
+  // 타입이 명시된 일반 장소는 상호명에 "공항"이 들어가도 교통 앵커로 잠그지 않는다.
+  if (["ATTRACTION", "RESTAURANT", "CAFE", "ACCOMMODATION"].includes(type)) {
+    return false;
+  }
+
+  return isAirportName(name) || /항공|탑승|렌터카/.test(name);
 };
 
 /** Frontend-only display refinement: keep fixed travel anchors, reduce dead time, and fill a missing dinner slot. */

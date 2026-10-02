@@ -38,6 +38,14 @@ public class TripPlanBedrockService {
     private static final float FINAL_PLANNER_TEMPERATURE =
             0.15F;
 
+    /**
+     * Bedrock 일정 생성은 최초 1회 + 보정 재시도 1회까지만 허용한다.
+     * 정상적인 프롬프트 일차 제약 미준수 때문에 곧바로 fallback으로 내려가는
+     * 빈도를 줄이되, 무한 재시도는 하지 않는다.
+     */
+    private static final int FINAL_PLANNER_MAX_ATTEMPTS =
+            2;
+
     private final BedrockClient bedrockClient;
     private final JsonMapper jsonMapper;
 
@@ -58,53 +66,180 @@ public class TripPlanBedrockService {
             FlightCandidate returnFlight
     ) {
 
-        try {
+        final String basePrompt;
 
-            String prompt =
+        try {
+            basePrompt =
                     buildPrompt(
                             trip,
                             candidatePool,
                             outboundFlight,
                             returnFlight
                     );
-
-            String response =
-                    bedrockClient.converse(
-                            prompt,
-                            FINAL_PLANNER_MAX_TOKENS,
-                            FINAL_PLANNER_TEMPERATURE
-                    );
-
-            List<PlannedDay> days =
-                    parseResponse(
-                            response,
-                            trip,
-                            candidatePool
-                    );
-
-            return new PlannerResult(
-                    "BEDROCK_FINAL_PLANNER",
-                    days
-            );
-
         } catch (Exception e) {
-
+            /*
+             * 입력 JSON 직렬화처럼 Bedrock 호출 이전에 발생한 오류는
+             * 같은 요청을 재시도해도 결과가 달라지지 않으므로 즉시 fallback한다.
+             */
             log.warn(
-                    "최종 여행일정 Bedrock 생성 실패. "
+                    "최종 여행일정 프롬프트 생성 실패. "
                             + "백엔드 fallback 일정으로 응답합니다.",
                     e
             );
 
-            return new PlannerResult(
-                    "BACKEND_FALLBACK_AFTER_BEDROCK_ERROR",
-                    buildFallbackPlan(
-                            trip,
-                            candidatePool,
-                            outboundFlight,
-                            returnFlight
-                    )
+            return fallbackResult(
+                    trip,
+                    candidatePool,
+                    outboundFlight,
+                    returnFlight
             );
         }
+
+        Exception lastFailure = null;
+
+        for (int attempt = 1; attempt <= FINAL_PLANNER_MAX_ATTEMPTS; attempt++) {
+            try {
+                String prompt =
+                        attempt == 1
+                                ? basePrompt
+                                : buildRetryPrompt(
+                                        basePrompt,
+                                        lastFailure
+                                );
+
+                String response =
+                        bedrockClient.converse(
+                                prompt,
+                                FINAL_PLANNER_MAX_TOKENS,
+                                FINAL_PLANNER_TEMPERATURE
+                        );
+
+                List<PlannedDay> days =
+                        parseResponse(
+                                response,
+                                trip,
+                                candidatePool
+                        );
+
+                if (attempt > 1) {
+                    log.info(
+                            "최종 여행일정 Bedrock 보정 재시도 성공. tripId={}, attempt={}",
+                            trip.getId(),
+                            attempt
+                    );
+                }
+
+                return new PlannerResult(
+                        attempt == 1
+                                ? "BEDROCK_FINAL_PLANNER"
+                                : "BEDROCK_FINAL_PLANNER_RETRY",
+                        days
+                );
+
+            } catch (Exception e) {
+                lastFailure = e;
+
+                if (attempt < FINAL_PLANNER_MAX_ATTEMPTS) {
+                    log.warn(
+                            "최종 여행일정 Bedrock 1차 생성/검증 실패. "
+                                    + "fallback 전 1회 보정 재시도합니다. tripId={}, reason={}",
+                            trip.getId(),
+                            conciseFailureReason(e)
+                    );
+                } else {
+                    log.warn(
+                            "최종 여행일정 Bedrock 보정 재시도까지 실패. "
+                                    + "백엔드 fallback 일정으로 응답합니다. tripId={}, reason={}",
+                            trip.getId(),
+                            conciseFailureReason(e),
+                            e
+                    );
+                }
+            }
+        }
+
+        return fallbackResult(
+                trip,
+                candidatePool,
+                outboundFlight,
+                returnFlight
+        );
+    }
+
+    private PlannerResult fallbackResult(
+            Trip trip,
+            TripPlanCandidatePool candidatePool,
+            FlightCandidate outboundFlight,
+            FlightCandidate returnFlight
+    ) {
+        return new PlannerResult(
+                "BACKEND_FALLBACK_AFTER_BEDROCK_ERROR",
+                buildFallbackPlan(
+                        trip,
+                        candidatePool,
+                        outboundFlight,
+                        returnFlight
+                )
+        );
+    }
+
+    /**
+     * 1차 응답이 JSON 파싱/일자/필수 목적지/프롬프트 일차 검증에서 실패했을 때
+     * 동일 입력을 유지하면서 실패 이유만 보정 지시로 추가한다.
+     * 원본 자유 프롬프트를 다시 해석하거나 새로운 요구사항을 만들어내지 않는다.
+     */
+    private String buildRetryPrompt(
+            String basePrompt,
+            Exception previousFailure
+    ) {
+        return basePrompt
+                + """
+
+                ==================================================
+                [보정 재시도 - 반드시 준수]
+                ==================================================
+                이전 응답은 Backend 검증을 통과하지 못해 폐기되었다.
+                아래 실패 이유를 바로잡아 전체 JSON 일정을 처음부터 다시 생성한다.
+                장소를 사후 이동시키는 답변이 아니라, promptDayConstraints를 포함한 상태로
+                각 날짜의 식사/카페/관광 동선을 처음부터 다시 편성한다.
+
+                특히 promptDayConstraints의 각 attractionId는:
+                - 지정된 dayNumber에 정확히 1회 존재해야 한다.
+                - 다른 dayNumber에는 존재하면 안 된다.
+                - 다른 관광지보다 이 제약을 우선한다.
+                - 식사를 삭제해서 이 제약을 맞추지 않는다.
+                - trip.foodPreferences에 CAFE가 있고 cafeCandidates가 비어 있지 않다면
+                  여행 전체에 CAFE를 최소 1회 반드시 포함한다.
+
+                이전 실패 이유: 
+                """
+                + conciseFailureReason(previousFailure);
+    }
+
+    private String conciseFailureReason(
+            Exception failure
+    ) {
+        if (failure == null) {
+            return "알 수 없는 검증 실패";
+        }
+
+        String message = failure.getMessage();
+
+        if (message == null || message.isBlank()) {
+            return failure.getClass().getSimpleName();
+        }
+
+        String normalized =
+                message.replaceAll(
+                        "\\s+",
+                        " "
+                ).trim();
+
+        if (normalized.length() <= 300) {
+            return normalized;
+        }
+
+        return normalized.substring(0, 300);
     }
 
     private String buildPrompt(
@@ -232,6 +367,18 @@ public class TripPlanBedrockService {
                 candidatePool.cafes()
         );
 
+        /*
+         * 자유 입력 원문을 Bedrock에 넘기지 않는다.
+         * 현재 지원하는 "관광지 + N일차"만 구조화해서 전달한다.
+         */
+        input.put(
+                "promptDayConstraints",
+                resolvePromptDayConstraints(
+                        trip,
+                        candidatePool
+                )
+        );
+
         String inputJson =
                 jsonMapper.writeValueAsString(
                         input
@@ -252,7 +399,12 @@ public class TripPlanBedrockService {
         3. 동일 id는 여행 전체에서 중복 사용하지 않는다.
         4. mandatoryDestination이 존재하면 mandatory=true인 ATTRACTION을 여행 전체에서 정확히 1회 반드시 포함한다.
            사용자가 동문시장 같은 목적지를 직접 선택했다면 일정에서 누락시키면 안 된다.
-        5. 항공/숙소/렌터카/공항 카드는 Backend가 삽입하므로 출력하지 않는다.
+        5. promptDayConstraints가 비어 있지 않다면 각 attractionId를 지정된 dayNumber에 정확히 1회 포함한다.
+           이 관광지를 다른 날짜에 먼저 넣었다가 나중에 옮기는 방식으로 생각하지 말고,
+           처음부터 해당 날짜의 식사/카페/다른 관광지와 동선을 함께 설계한다.
+           promptDayConstraints는 관광지의 "방문 일차"만 강제한다. 별도의 시간대 요구는 없다.
+        6. 자유 입력 원문은 제공되지 않는다. promptDayConstraints 이외의 자연어 요구를 추측하지 않는다.
+        7. 항공/숙소/렌터카/공항 카드는 Backend가 삽입하므로 출력하지 않는다.
 
         ==================================================
         [실제 이동시간과 추천 품질]
@@ -340,6 +492,7 @@ public class TripPlanBedrockService {
         - 2박3일이면 보통 전체 1~2회 정도가 자연스럽다.
 
         trip.foodPreferences에 CAFE가 있는 경우:
+        - cafeCandidates가 비어 있지 않다면 여행 전체에 CAFE를 최소 1회 반드시 포함한다.
         - 가능한 날마다 카페를 포함한다.
         - 하루 전체를 쓰는 중간 날짜에는 카페 2회도 허용한다.
         - 마지막 날도 항공 시간에 여유가 있으면 1회 가능하다.
@@ -412,10 +565,12 @@ public class TripPlanBedrockService {
 
         반환 전 자체 검증:
         - mandatory=true 목적지가 정확히 1회 포함되었는가?
+        - promptDayConstraints의 attractionId가 각각 지정된 dayNumber에 정확히 1회 포함되었는가?
         - 중간 날짜에 아침/점심/저녁 3식이 있는가?
         - 아침에 흑돼지/구이/횟집 같은 저녁형 식당을 넣지 않았는가?
         - 중간 날짜의 마지막 현지 식사가 저녁인가?
         - 첫날 체크인 시간과 마지막날 체크아웃 시간을 고려했는가?
+        - CAFE 선호이고 cafeCandidates가 존재한다면 CAFE가 최소 1회 포함되었는가?
         - 카페가 식사를 밀어내지 않았는가?
         - rating/reviewCount가 좋은 후보가 단순 거리 때문에 불합리하게 배제되지 않았는가?
         - 항공편 시간과 충돌하지 않는가?
@@ -660,7 +815,119 @@ public class TripPlanBedrockService {
                     }
                 });
 
+        validatePromptDayConstraints(
+                trip,
+                candidatePool,
+                result
+        );
+
+        validateCafePreference(
+                trip,
+                candidatePool,
+                result
+        );
+
         return result;
+    }
+
+    private List<TripPromptDayConstraintParser.DayConstraint> resolvePromptDayConstraints(
+            Trip trip,
+            TripPlanCandidatePool candidatePool
+    ) {
+        int totalDays =
+                (int) ChronoUnit.DAYS.between(
+                        trip.getStartDate(),
+                        trip.getEndDate()
+                ) + 1;
+
+        List<TripPromptDayConstraintParser.NamedAttraction> candidates =
+                candidatePool.attractions()
+                        .stream()
+                        .map(item -> new TripPromptDayConstraintParser.NamedAttraction(
+                                item.id(),
+                                item.name()
+                        ))
+                        .toList();
+
+        return TripPromptDayConstraintParser.parse(
+                trip.getPrompt(),
+                totalDays,
+                candidates
+        );
+    }
+
+    private void validatePromptDayConstraints(
+            Trip trip,
+            TripPlanCandidatePool candidatePool,
+            List<PlannedDay> days
+    ) {
+        for (TripPromptDayConstraintParser.DayConstraint constraint
+                : resolvePromptDayConstraints(trip, candidatePool)) {
+
+            long totalOccurrences =
+                    days.stream()
+                            .flatMap(day -> day.items().stream())
+                            .filter(item ->
+                                    item.type() == TripPlanItemType.ATTRACTION
+                                            && item.id().equals(constraint.attractionId())
+                            )
+                            .count();
+
+            long requestedDayOccurrences =
+                    days.stream()
+                            .filter(day -> day.dayNumber() == constraint.dayNumber())
+                            .flatMap(day -> day.items().stream())
+                            .filter(item ->
+                                    item.type() == TripPlanItemType.ATTRACTION
+                                            && item.id().equals(constraint.attractionId())
+                            )
+                            .count();
+
+            if (totalOccurrences != 1L || requestedDayOccurrences != 1L) {
+                throw new IllegalStateException(
+                        "Bedrock 일정이 프롬프트 방문 일차를 정확히 지키지 않았습니다: "
+                                + constraint.attractionName()
+                                + " -> "
+                                + constraint.dayNumber()
+                                + "일차, totalOccurrences="
+                                + totalOccurrences
+                                + ", requestedDayOccurrences="
+                                + requestedDayOccurrences
+                );
+            }
+        }
+    }
+
+    /**
+     * 사용자가 CAFE를 선호했고 실제 카페 후보가 존재하는데도
+     * Bedrock이 카페를 하나도 선택하지 않았다면 정상 결과로 채택하지 않는다.
+     * 1차 결과에서는 보정 재시도를 유도하고, 재시도도 실패하면
+     * 카페 선호를 보존하는 Backend fallback 일정으로 내려간다.
+     */
+    private void validateCafePreference(
+            Trip trip,
+            TripPlanCandidatePool candidatePool,
+            List<PlannedDay> days
+    ) {
+        boolean cafePreferred =
+                trip.getFoodPreferences() != null
+                        && trip.getFoodPreferences().contains(FoodPreference.CAFE);
+
+        if (!cafePreferred || candidatePool.cafes().isEmpty()) {
+            return;
+        }
+
+        long cafeCount =
+                days.stream()
+                        .flatMap(day -> day.items().stream())
+                        .filter(item -> item.type() == TripPlanItemType.CAFE)
+                        .count();
+
+        if (cafeCount == 0L) {
+            throw new IllegalStateException(
+                    "Bedrock 일정이 CAFE 선호를 반영하지 않았습니다: cafeCount=0"
+            );
+        }
     }
 
     private boolean isValidCandidateId(
@@ -738,6 +1005,21 @@ public class TripPlanBedrockService {
         Set<Long> usedAttractions = new HashSet<>();
         Set<Long> usedCafes = new HashSet<>();
 
+        List<TripPromptDayConstraintParser.DayConstraint> promptDayConstraints =
+                resolvePromptDayConstraints(
+                        trip,
+                        candidatePool
+                );
+
+        // 프롬프트로 특정 일차가 지정된 관광지는 해당 일차가 오기 전
+        // 일반 fallback 관광지 선택에서 소비되면 안 된다.
+        // 예: "한담해안산책로 3일차"인데 ACTIVE 일정의 1일차 generic pick이
+        // 먼저 한담해안산책로를 선택하면 3일차 제약이 사라지는 문제가 생긴다.
+        Set<Long> promptReservedAttractionIds =
+                promptDayConstraints.stream()
+                        .map(TripPromptDayConstraintParser.DayConstraint::attractionId)
+                        .collect(java.util.stream.Collectors.toSet());
+
         TripPlanCandidatePool.AttractionCandidate mandatory =
                 candidatePool.attractions()
                         .stream()
@@ -746,7 +1028,13 @@ public class TripPlanBedrockService {
                         .orElse(null);
 
         int mandatoryDay =
-                totalDays >= 3 ? 2 : 1;
+                mandatory == null
+                        ? (totalDays >= 3 ? 2 : 1)
+                        : promptDayConstraints.stream()
+                        .filter(item -> item.attractionId().equals(mandatory.id()))
+                        .map(TripPromptDayConstraintParser.DayConstraint::dayNumber)
+                        .findFirst()
+                        .orElse(totalDays >= 3 ? 2 : 1);
 
         boolean cafePreferred =
                 trip.getFoodPreferences().contains(FoodPreference.CAFE);
@@ -812,15 +1100,89 @@ public class TripPlanBedrockService {
                 }
             }
 
+            int promptAttractionsToday = 0;
+            for (TripPromptDayConstraintParser.DayConstraint constraint : promptDayConstraints) {
+                if (constraint.dayNumber() != dayNumber
+                        || usedAttractions.contains(constraint.attractionId())) {
+                    continue;
+                }
+
+                TripPlanCandidatePool.AttractionCandidate required =
+                        findAttractionById(
+                                candidatePool.attractions(),
+                                constraint.attractionId()
+                        );
+
+                if (required == null) {
+                    continue;
+                }
+
+                int stay = defaultStayMinutes(
+                        TripPlanItemType.ATTRACTION,
+                        trip.getPace()
+                );
+
+                items.add(new PlannedItem(
+                        TripPlanItemType.ATTRACTION,
+                        required.id(),
+                        cursor,
+                        stay,
+                        "사용자가 " + dayNumber + "일차 방문을 지정한 관광지"
+                ));
+                usedAttractions.add(required.id());
+                promptAttractionsToday++;
+                cursor = cursor.plusMinutes(stay + 30L);
+            }
+
             int attractionTarget = switch (trip.getPace()) {
                 case RELAXED -> 1;
                 case BALANCED -> 2;
                 case ACTIVE -> 3;
             };
 
-            for (int i = 0; i < attractionTarget; i++) {
+            /*
+             * CAFE 선호가 있으면 관광지가 하루를 전부 점유하지 않도록
+             * 관광지 목표에서 한 슬롯을 카페용으로 비워 둔다.
+             * ACTIVE여도 프롬프트 관광지를 포함해 관광지만 3개가 꽉 차서
+             * 카페가 밀려나는 현상을 방지한다.
+             */
+            int reservedCafeSlots =
+                    cafePreferred && !candidatePool.cafes().isEmpty() ? 1 : 0;
+
+            int genericAttractionTarget =
+                    Math.max(
+                            0,
+                            attractionTarget
+                                    - promptAttractionsToday
+                                    - reservedCafeSlots
+                    );
+
+            /*
+             * CAFE 선호 시 첫 카페를 일반 관광지보다 먼저 확보한다.
+             * 기존에는 관광지 배치 후 cursor가 17:30을 넘으면
+             * cafeTarget이 있어도 카페가 0개가 될 수 있었다.
+             */
+            if (cafePreferred) {
+                TripPlanCandidatePool.CafeCandidate cafe =
+                        pickCafe(candidatePool.cafes(), usedCafes);
+
+                if (cafe != null && !cursor.isAfter(LocalTime.of(17, 30))) {
+                    items.add(new PlannedItem(
+                            TripPlanItemType.CAFE, cafe.id(), cursor, 60,
+                            "카페 선호와 평점/리뷰 품질을 반영한 fallback 카페"
+                    ));
+                    usedCafes.add(cafe.id());
+                    cursor = cursor.plusMinutes(90);
+                }
+            }
+
+            for (int i = 0; i < genericAttractionTarget; i++) {
                 TripPlanCandidatePool.AttractionCandidate attraction =
-                        pickAttraction(candidatePool.attractions(), usedAttractions);
+                        pickAttraction(
+                                candidatePool.attractions(),
+                                usedAttractions,
+                                promptReservedAttractionIds
+                        );
                 if (attraction == null || cursor.isAfter(LocalTime.of(17, 0))) {
                     break;
                 }
@@ -834,14 +1196,15 @@ public class TripPlanBedrockService {
                 cursor = cursor.plusMinutes(stay + 30L);
             }
 
-            int cafeTarget;
+            int additionalCafeTarget;
             if (cafePreferred) {
-                cafeTarget = (!firstDay && !lastDay) ? 2 : 1;
+                // 선호 카페 1개는 위에서 먼저 확보했다. 중간 날짜만 여유가 있으면 1개를 추가한다.
+                additionalCafeTarget = (!firstDay && !lastDay) ? 1 : 0;
             } else {
-                cafeTarget = lastDay ? 0 : 1;
+                additionalCafeTarget = lastDay ? 0 : 1;
             }
 
-            for (int i = 0; i < cafeTarget; i++) {
+            for (int i = 0; i < additionalCafeTarget; i++) {
                 TripPlanCandidatePool.CafeCandidate cafe =
                         pickCafe(candidatePool.cafes(), usedCafes);
                 if (cafe == null || cursor.isAfter(LocalTime.of(17, 30))) {
@@ -904,6 +1267,16 @@ public class TripPlanBedrockService {
         return days;
     }
 
+    private TripPlanCandidatePool.AttractionCandidate findAttractionById(
+            List<TripPlanCandidatePool.AttractionCandidate> candidates,
+            Long id
+    ) {
+        return candidates.stream()
+                .filter(item -> item.id().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
     private TripPlanCandidatePool.RestaurantCandidate pickRestaurant(
             List<TripPlanCandidatePool.RestaurantCandidate> candidates,
             Set<Long> usedIds,
@@ -933,11 +1306,13 @@ public class TripPlanBedrockService {
 
     private TripPlanCandidatePool.AttractionCandidate pickAttraction(
             List<TripPlanCandidatePool.AttractionCandidate> candidates,
-            Set<Long> usedIds
+            Set<Long> usedIds,
+            Set<Long> reservedPromptIds
     ) {
         return candidates.stream()
                 .filter(item -> !item.mandatory())
                 .filter(item -> !usedIds.contains(item.id()))
+                .filter(item -> reservedPromptIds == null || !reservedPromptIds.contains(item.id()))
                 .max(Comparator.comparingDouble(item ->
                         safe(item.recommendationScore()) * 0.85
                                 + routeConvenience(item.actualDriveMinutesFromAccommodation()) * 0.15

@@ -7,6 +7,7 @@ import com.travel.trip.entity.MainTransportMode;
 import com.travel.trip.entity.Trip;
 import com.travel.trip.entity.TripPace;
 import com.travel.trip.entity.TripPreference;
+import com.travel.trip.entity.VehicleFuelType;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -43,6 +44,10 @@ public record TripResponse(
 
         LocalTransportMode localTransportMode,
 
+        VehicleFuelType fuelType,
+
+        Double vehicleEfficiencyKmpl,
+
         Long budget,
 
         Long mealBudgetPerPersonPerDay,
@@ -52,6 +57,8 @@ public record TripResponse(
         Set<TripPreference> preferences,
 
         Set<FoodPreference> foodPreferences,
+
+        String prompt,
 
         TripSelectedAccommodationResponse selectedAccommodation,
 
@@ -91,6 +98,9 @@ public record TripResponse(
                 trip.getMainTransportMode(),
                 trip.getLocalTransportMode(),
 
+                trip.getFuelType(),
+                trip.getVehicleEfficiencyKmpl(),
+
                 trip.getBudget(),
                 trip.getMealBudgetPerPersonPerDay(),
 
@@ -103,6 +113,8 @@ public record TripResponse(
                 Set.copyOf(
                         trip.getFoodPreferences()
                 ),
+
+                trip.getPrompt(),
 
                 TripSelectedAccommodationResponse.from(
                         trip.getSelectedAccommodation()

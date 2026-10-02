@@ -504,6 +504,45 @@ const LOCAL_TRANSPORT_MAP = {
 };
 
 
+
+const VEHICLE_FUEL_TYPE_MAP = {
+  "휘발유": "GASOLINE",
+  "경유": "DIESEL",
+  LPG: "LPG",
+  전기: "ELECTRIC",
+};
+
+const VEHICLE_EFFICIENCY_KMPL = {
+  "경차": 14.5,
+  "세단": 12.5,
+  SUV: 10.2,
+  "승합": 8.5,
+};
+
+const inferRentalFuelType = (rental) => {
+  const explicit = String(rental?.fuelType || "").toUpperCase();
+  if (["GASOLINE", "DIESEL", "LPG", "ELECTRIC"].includes(explicit)) {
+    return explicit;
+  }
+
+  const text = `${rental?.car || ""} ${rental?.fuel || ""}`.toLowerCase();
+  if (/ev|전기|electric/.test(text)) return "ELECTRIC";
+  if (/경유|디젤|diesel/.test(text)) return "DIESEL";
+  if (/lpg|부탄/.test(text)) return "LPG";
+  return "GASOLINE";
+};
+
+const inferRentalEfficiencyKmpl = (rental) => {
+  const supplied = Number(rental?.efficiencyKmpl);
+  if (Number.isFinite(supplied) && supplied > 0) return supplied;
+
+  const text = String(rental?.car || "");
+  if (/경차|레이|캐스퍼/.test(text)) return 14.5;
+  if (/승합|카니발|스타리아/.test(text)) return 8.5;
+  if (/SUV|코나|니로/.test(text)) return 10.2;
+  return 12.5;
+};
+
 const PACE_MAP = {
   "여유롭게":
     "RELAXED",
@@ -712,6 +751,11 @@ function useTripPlanner() {
       readInitialDraft,
     );
 
+  const savedTravelerCount = Number(initialDraft.travelers);
+  const initialTravelerCount = Number.isFinite(savedTravelerCount) && savedTravelerCount >= 1
+    ? Math.min(20, Math.floor(savedTravelerCount))
+    : null;
+
   const initialBookingSelection =
     initialDraft.bookingSelection && typeof initialDraft.bookingSelection === "object"
       ? initialDraft.bookingSelection
@@ -896,8 +940,7 @@ function useTripPlanner() {
     setTravelers,
   ] =
     useState(
-      initialDraft.travelers ||
-        null,
+      initialTravelerCount,
     );
 
 
@@ -905,7 +948,7 @@ function useTripPlanner() {
     travelerInput,
     setTravelerInput,
   ] =
-    useState("");
+    useState(initialTravelerCount == null ? "" : String(initialTravelerCount));
 
 
   const [
@@ -2811,23 +2854,22 @@ function useTripPlanner() {
 
 
   const vehicleEfficiency =
-    {
-      경차:
-        14.5,
+    VEHICLE_EFFICIENCY_KMPL[carType] || 12.5;
 
-      세단:
-        12.5,
 
-      SUV:
-        10.2,
+  const backendVehicleRouteCostTotal =
+    (backendPlan?.routes || [])
+      .flatMap((route) => route?.segments || [])
+      .filter((segment) => ["RENTAL_CAR", "OWN_CAR"].includes(String(segment?.mode || "").toUpperCase()))
+      .reduce((sum, segment) => {
+        const cost = Number(segment?.cost);
+        return sum + (Number.isFinite(cost) && cost > 0 ? cost : 0);
+      }, 0);
 
-      승합:
-        8.5,
-    }[
-      carType
-    ] ||
-    12.5;
-
+  const selectedVehicleFuelType =
+    localTransport === "RENTAL" && selectedRental
+      ? inferRentalFuelType(selectedRental)
+      : VEHICLE_FUEL_TYPE_MAP[carFuel] || "GASOLINE";
 
   const fuelPrice =
     {
@@ -2846,15 +2888,14 @@ function useTripPlanner() {
 
 
   const localFuelAndParkingTotal =
-    Math.round(
-      (
-        itineraryDistanceKm /
-        vehicleEfficiency
-      ) *
-        fuelPrice +
-        nights *
-          9000,
-    );
+    backendVehicleRouteCostTotal > 0
+      ? Math.round(backendVehicleRouteCostTotal + nights * 9000)
+      : selectedVehicleFuelType === "ELECTRIC"
+        ? Math.round(nights * 9000)
+        : Math.round(
+            (itineraryDistanceKm / vehicleEfficiency) * fuelPrice +
+              nights * 9000,
+          );
 
 
   const usesRental =
@@ -3294,22 +3335,22 @@ function useTripPlanner() {
                     ],
 
                     [
-                      "현지 주유·주차",
+                      "현지 유류·통행료·주차",
 
                       localFuelAndParkingPerPerson,
 
-                      `${destinationLabel} 일정 약 ${itineraryDistanceKm}km · 차량 공용 비용을 ${party}명 분할`,
+                      `${destinationLabel} 일정 약 ${itineraryDistanceKm}km · 오피넷 유가·통행료·주차 포함 · ${party}명 분할`,
                     ],
                   ]
                 : selectedTransportMode ===
                     "CAR"
                   ? [
                       [
-                        "현지 주유·주차",
+                        "현지 유류·통행료·주차",
 
                         localFuelAndParkingPerPerson,
 
-                        `${destinationLabel} 일정 약 ${itineraryDistanceKm}km · 차량 공용 비용을 ${party}명 분할`,
+                        `${destinationLabel} 일정 약 ${itineraryDistanceKm}km · 오피넷 유가·통행료·주차 포함 · ${party}명 분할`,
                       ],
                     ]
                   : []
@@ -3445,7 +3486,7 @@ function useTripPlanner() {
 
   const isSharedBackendCostItem = (item, itemLabel) =>
     String(item.scope || "").toLowerCase() === "shared" ||
-    /숙박|숙소|호텔|렌터카|주유|주차/.test(itemLabel);
+    /숙박|숙소|호텔|렌터카|주유|유류|통행료|주차/.test(itemLabel);
 
 
   const resolveBackendCostItem = (item, { isShared = false } = {}) => {
@@ -4315,7 +4356,7 @@ function useTripPlanner() {
       }
 
       notify(
-        "AI가 입력한 여행 취향을 일정 추천에 반영할게요.",
+        "지정한 관광지의 방문 일차를 일정 생성에 반영할게요.",
       );
     };
 
@@ -6599,6 +6640,20 @@ function useTripPlanner() {
       pace
     ];
 
+  const backendFuelType =
+    localTransportMode === "RENTAL_CAR" && selectedRental
+      ? inferRentalFuelType(selectedRental)
+      : (localTransportMode === "OWN_CAR" || mainTransportMode === "OWN_CAR")
+        ? VEHICLE_FUEL_TYPE_MAP[carFuel] || "GASOLINE"
+        : null;
+
+  const backendVehicleEfficiencyKmpl =
+    localTransportMode === "RENTAL_CAR" && selectedRental
+      ? inferRentalEfficiencyKmpl(selectedRental)
+      : (localTransportMode === "OWN_CAR" || mainTransportMode === "OWN_CAR")
+        ? VEHICLE_EFFICIENCY_KMPL[carType] || 12.5
+        : null;
+
 
   if (!mainTransportMode) {
     return notify(
@@ -6925,6 +6980,12 @@ function useTripPlanner() {
 
         localTransportMode,
 
+        fuelType:
+          backendFuelType,
+
+        vehicleEfficiencyKmpl:
+          backendVehicleEfficiencyKmpl,
+
 
         budget:
           Math.max(
@@ -6955,6 +7016,10 @@ function useTripPlanner() {
 
         foodPreferences:
           backendFoodPreferences,
+
+        prompt:
+          prompt.trim() ||
+          null,
 
 
         /*

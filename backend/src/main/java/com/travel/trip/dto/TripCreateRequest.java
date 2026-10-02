@@ -6,6 +6,7 @@ import com.travel.trip.entity.LocalTransportMode;
 import com.travel.trip.entity.MainTransportMode;
 import com.travel.trip.entity.TripPace;
 import com.travel.trip.entity.TripPreference;
+import com.travel.trip.entity.VehicleFuelType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -107,6 +108,22 @@ public record TripCreateRequest(
         )
         LocalTransportMode localTransportMode,
 
+        /*
+         * 차량 이동 유류비 계산용.
+         * 자동차/렌터카가 아니면 null이어도 된다.
+         */
+        VehicleFuelType fuelType,
+
+        @DecimalMin(
+                value = "1.0",
+                message = "차량 연비는 1km/L 이상이어야 합니다."
+        )
+        @DecimalMax(
+                value = "50.0",
+                message = "차량 연비는 50km/L 이하여야 합니다."
+        )
+        Double vehicleEfficiencyKmpl,
+
         @NotNull(message = "예산은 필수입니다.")
         @PositiveOrZero(
                 message = "예산은 0원 이상이어야 합니다."
@@ -138,6 +155,16 @@ public record TripCreateRequest(
                 message = "음식 취향은 최대 3개까지 선택할 수 있습니다."
         )
         Set<FoodPreference> foodPreferences,
+
+        /*
+         * 자유 입력은 현재 "관광지 + N일차" 제약만 해석한다.
+         * 그 외 문장은 일정 생성 규칙에 영향을 주지 않는다.
+         */
+        @Size(
+                max = 1000,
+                message = "여행 요청은 최대 1000자까지 입력할 수 있습니다."
+        )
+        String prompt,
 
         /*
          * 메인 화면에서 사용자가 직접 선택한 숙소.

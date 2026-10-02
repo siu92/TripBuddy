@@ -781,7 +781,7 @@ function App() {
         <div className="planner-card">
           <div className="form-area">
             <div className="prompt-area">
-              <label htmlFor="prompt">여행을 자유롭게 설명해 주세요</label>
+              <label htmlFor="prompt">방문 일차를 지정할 관광지를 입력해 주세요</label>
               <div className="prompt-box">
                 <span>●</span>
                 <textarea
@@ -795,7 +795,7 @@ function App() {
                     }
                   }}
                   rows="2"
-                  placeholder="예: 2박 3일 도쿄 여행, 50만원 예산으로 맛집과 야경을 즐기고 싶어요."
+                  placeholder="예: 한담해안산책로는 3일차에 가고 싶어요."
                 />
                 <div className="prompt-actions">
                   <button
@@ -817,7 +817,7 @@ function App() {
                 </div>
               </div>
               <small className="prompt-tip">
-                Enter로 전송 · 줄바꿈은 Shift + Enter
+                관광지 + N일차만 일정 생성에 반영 · Enter로 전송 · 줄바꿈은 Shift + Enter
               </small>
             </div>
             <section className="budget-input-card early-budget">

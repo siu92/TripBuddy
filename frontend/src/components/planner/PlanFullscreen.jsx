@@ -10,6 +10,7 @@ import RouteMap from "./RouteMap";
 import AttractionDetailModal from "./AttractionDetailModal";
 import { eventClock, eventMinutes } from "../../utils/planTime.js";
 import { hasJejuAttractionDetail } from "../../data/jejuAttractionDetails.js";
+import { isAirportName } from "../../utils/routeFilters.js";
 
 
 
@@ -87,7 +88,7 @@ function consumerEventDetail({ name, detail, eventType, price, money, metadata =
 
   const original = String(detail || "").trim();
   const isInternalCopy = !original
-    || /recommendationScore|최종 일정|시간 기준|동선 (?:반영|계산)|다시 계산|좌표 기반|이동 가능|일정을 시작|AI가|필수 목적지/i.test(original);
+    || /fallback|BACKEND_FALLBACK|BEDROCK|recommendationScore|최종 일정|시간 기준|동선 (?:반영|계산)|다시 계산|좌표 기반|이동 가능|일정을 시작|AI가|필수 목적지/i.test(original);
   if (!isInternalCopy) return original;
 
   const representativeMenu = String(metadata.representativeMenu || "").trim();
@@ -618,7 +619,7 @@ function PlanFullscreen({
                   || /렌터카/.test(name);
                 const isAirportStop =
                   backendPlaceType === "AIRPORT"
-                  || (!backendPlaceType && /(?:국제)?공항$|항공편|탑승/.test(name || ""));
+                  || (!backendPlaceType && (isAirportName(name) || /항공편|탑승/.test(name || "")));
                 const isArrivalAirport =
                   backendPlaceType === "AIRPORT" && backendCategory.includes("ARRIVAL_AIRPORT");
                 const hasPartnerBooking = isRentalStop || (isAirportStop && !isArrivalAirport);
@@ -672,11 +673,16 @@ function PlanFullscreen({
                     ? "카페"
                     : isRestaurant
                       ? "식사"
-                      : /체크인|체크아웃|호텔|숙소|짐 정리/.test(name || "")
+                      : backendPlaceType === "ACCOMMODATION" || /체크인|체크아웃|호텔|숙소|짐 정리/.test(name || "")
                         ? "숙소"
-                        : /공항|항공|탑승|역·터미널/.test(name || "")
+                        : isAirportStop || /항공|탑승|역·터미널/.test(name || "")
                           ? "교통"
                           : "관광";
+                const showStopPrice = Boolean(costLabel)
+                  && !isRentalStop
+                  && !isAirportStop
+                  && !/(?:국제)?공항$|항공편|탑승/.test(name || "")
+                  && eventType !== "숙소";
                 const consumerDetail = consumerEventDetail({
                   name,
                   detail,
@@ -702,7 +708,7 @@ function PlanFullscreen({
                       ...(!metadata.isLocked ? dragProvided.dragHandleProps?.style : {}),
                       cursor: metadata.isLocked ? "default" : undefined,
                     }}
-                    className={`itinerary-stop${metadata.isLocked ? "" : " is-draggable"}${dragSnapshot.isDragging ? " is-dragging" : ""}`}
+                    className={`itinerary-stop${isDiningPlace ? " is-dining-stop" : eventType === "관광" ? " is-attraction-stop" : ""}${metadata.isLocked ? "" : " is-draggable"}${dragSnapshot.isDragging ? " is-dragging" : ""}`}
                   >
                     <time>{displayTime}</time>
                     <span>{icon}</span>
@@ -714,9 +720,9 @@ function PlanFullscreen({
                       <div className="stop-title-row">
                         <div className="stop-place-heading">
                           <b>{name}</b>
-                          {costLabel && (
+                          {showStopPrice && (
                             <em className="stop-price-summary">
-                              <small>{isRentalStop ? "렌터카 총액" : isDiningPlace ? "예상 식비" : "예상 금액"}</small>
+                              <small>{isDiningPlace ? "예상 식비" : "예상 금액"}</small>
                               <strong>{costLabel}</strong>
                             </em>
                           )}
@@ -787,20 +793,24 @@ function PlanFullscreen({
                           >
                             장소 변경
                           </button>
-                          <button
-                            type="button"
-                            className="stop-remove-action"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              onRemoveStop?.(activeDay, eventId);
-                            }}
-                            aria-label={`${name} 일정에서 제외`}
-                          >
-                            <Minus size={13} aria-hidden="true" /> 일정 제외
-                          </button>
                         </div>
                       )}
                     </div>
+                    {!metadata.isLocked && (
+                      <button
+                        type="button"
+                        className="stop-remove-action"
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onRemoveStop?.(activeDay, eventId);
+                        }}
+                        aria-label={`${name} 일정에서 제외`}
+                        title={`${name} 일정에서 제외`}
+                      >
+                        <Minus size={14} aria-hidden="true" />
+                      </button>
+                    )}
                     {nextEvent && travelAfter > 0 && (
                       <div className="stop-route-leg" aria-label={`다음 장소까지 이동시간 ${travelAfter}분`}>
                         <span className="route-leg-arrow"><ArrowDown size={13} aria-hidden="true" /></span>
@@ -895,19 +905,6 @@ function PlanFullscreen({
                       <small>TRIPBUDDY DINING GUIDE</small>
                       <h2>{restaurantDetail.name}</h2>
                       <p>{restaurantDetail.address}</p>
-                      <div className="restaurant-detail-place-links">
-                        {/^https?:\/\//i.test(restaurantDetail.placeUrl || "") && (
-                          <a href={restaurantDetail.placeUrl} target="_blank" rel="noreferrer noopener">
-                            <MapPin size={14} /> 카카오플레이스 <ExternalLink size={12} />
-                          </a>
-                        )}
-                        {!/^https?:\/\//i.test(restaurantDetail.placeUrl || "") &&
-                          /^https?:\/\//i.test(restaurantDetail.naverMapUrl || "") && (
-                            <a href={restaurantDetail.naverMapUrl} target="_blank" rel="noreferrer noopener">
-                              <MapPin size={14} /> 네이버 지도 <ExternalLink size={12} />
-                            </a>
-                          )}
-                      </div>
                     </div>
                     {restaurantDetail.rating != null && <strong><Star size={15} fill="currentColor" /> {restaurantDetail.rating.toFixed(1)} <small>후기 {restaurantDetail.reviewCount?.toLocaleString("ko-KR")}개</small></strong>}
                   </header>
@@ -920,9 +917,9 @@ function PlanFullscreen({
                       </article>)}
                     </div>
                   </section>
-                  <section className="restaurant-review-section">
+                  <section className="restaurant-review-section" id="restaurant-review-summary">
                     <div className="restaurant-section-title"><span>후기 한눈에 보기</span><small>{restaurantDetail.isMock ? "시연용 요약" : restaurantDetail.sourceLabel}</small></div>
-                    <p>{restaurantDetail.reviewSummary}</p>
+                    <p>{restaurantDetail.reviewSummary || "후기 내용은 카카오플레이스에서 확인해 주세요."}</p>
                     <div>{restaurantDetail.reviewKeywords?.map((keyword) => <span key={keyword}>#{keyword}</span>)}</div>
                     <div className="restaurant-review-action">
                       {/^https?:\/\//i.test(restaurantDetail.placeUrl || "") ? (
@@ -936,12 +933,20 @@ function PlanFullscreen({
                       ) : null}
                     </div>
                   </section>
-                  <footer>
-                    <div>
-                      <b>{restaurantDetail.businessHours || "영업시간은 카카오플레이스에서 확인해 주세요."}</b>
-                      <small>{restaurantDetail.sourceLabel || (restaurantDetail.isMock ? "시연용 상세 정보" : "백엔드 상세 정보")}</small>
-                    </div>
-                  </footer>
+                  <div className="restaurant-detail-bottom-actions">
+                    <button type="button" onClick={() => document.getElementById("restaurant-review-summary")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+                      후기 보기
+                    </button>
+                    {/^https?:\/\//i.test(restaurantDetail.placeUrl || "") ? (
+                      <a href={restaurantDetail.placeUrl} target="_blank" rel="noreferrer noopener">
+                        <MapPin size={14} /> 카카오플레이스 <ExternalLink size={12} />
+                      </a>
+                    ) : /^https?:\/\//i.test(restaurantDetail.naverMapUrl || "") ? (
+                      <a href={restaurantDetail.naverMapUrl} target="_blank" rel="noreferrer noopener">
+                        <MapPin size={14} /> 네이버 지도 <ExternalLink size={12} />
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               </>
             )}
