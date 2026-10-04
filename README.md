@@ -28,7 +28,7 @@ PC에서 세운 계획을 모바일로 확인하고, 현지에서 방문 순서�
 
 | 방문 순서 변경 | 대체 장소 선택 | 이동 경로 확인 |
 | --- | --- | --- |
-| [![모바일 일정 편집](docs/images/mobile-edit.gif)](https://siu92.github.io/TripBuddy/?play=1&t=338#demo) | [![모바일 대체 장소 선택](docs/images/mobile-place.jpg)](https://siu92.github.io/TripBuddy/?play=1&t=345#demo) | [![모바일 이동 경로](docs/images/mobile-route.jpg)](https://siu92.github.io/TripBuddy/?play=1&t=360#demo) |
+| [![모바일 일정 확인](docs/images/mobile-itinerary.jpg)](https://siu92.github.io/TripBuddy/?play=1&t=338#demo) | [![모바일 대체 장소 선택](docs/images/mobile-place.jpg)](https://siu92.github.io/TripBuddy/?play=1&t=345#demo) | [![모바일 이동 경로](docs/images/mobile-route.jpg)](https://siu92.github.io/TripBuddy/?play=1&t=360#demo) |
 
 **[모바일 화면과 시연 보기 →](https://siu92.github.io/TripBuddy/#mobile)**
 
