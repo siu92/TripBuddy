@@ -1,4 +1,6 @@
-# [🌐 TripBuddy 웹 포트폴리오 바로 보기](https://siu92.github.io/TripBuddy/)
+# [🌐 siu92.github.io/TripBuddy](https://siu92.github.io/TripBuddy/)
+
+**TripBuddy 웹 포트폴리오 바로 보기**
 
 **영상과 발표자료는 웹에서 다운로드 없이 볼 수 있습니다.**
 
