@@ -1,55 +1,56 @@
-# [🌐 siu92.github.io/TripBuddy](https://siu92.github.io/TripBuddy/)
+# [🌐 TripBuddy 웹 포트폴리오](https://siu92.github.io/TripBuddy/)
 
-**TripBuddy 웹 포트폴리오 바로 보기**
+**예산 안에서 여행을 계획하고, 여행 중에도 바꾸는 일정.**
 
-**영상과 발표자료는 웹에서 다운로드 없이 볼 수 있습니다.**
+영상과 발표자료는 **웹에서 다운로드 없이** 볼 수 있습니다.
 
-[웹 포트폴리오 열기](https://siu92.github.io/TripBuddy/) · [시연 영상](https://siu92.github.io/TripBuddy/?play=1#demo) · [UI·UX 설계](https://siu92.github.io/TripBuddy/#ux) · [모바일 화면](https://siu92.github.io/TripBuddy/#mobile) · [발표자료](https://siu92.github.io/TripBuddy/#presentation)
+[핵심 설계](https://siu92.github.io/TripBuddy/#ux) · [설계를 바꾼 사례](https://siu92.github.io/TripBuddy/#decision) · [실제 시연](https://siu92.github.io/TripBuddy/?play=1#demo) · [모바일](https://siu92.github.io/TripBuddy/#mobile) · [발표자료](https://siu92.github.io/TripBuddy/#presentation)
 
-[![TripBuddy 웹 포트폴리오 — 클릭해서 보기](docs/images/demo-poster.jpg)](https://siu92.github.io/TripBuddy/)
+[![TripBuddy — 실제 PC·모바일 구현과 UI·UX 설계 포트폴리오](docs/images/portfolio-cover.png)](https://siu92.github.io/TripBuddy/)
 
-## TripBuddy
+## 어떤 프로젝트인가요?
 
-**예산과 취향으로 국내 여행 일정을 만들고, 여행 중에도 수정하는 AI 여행 플랫폼입니다.**
-
-여행 조건에 맞는 교통편과 숙소를 고르면 AI가 날짜별 일정을 만듭니다. 지도와 예상 경비를 함께 확인하고, PC와 모바일에서 방문 순서나 장소를 바꿀 수 있습니다.
+TripBuddy는 예산과 취향을 바탕으로 국내 여행 일정을 생성하고, 지도와 예상 경비를 보며 방문 순서와 장소를 수정하는 AI 여행 플랫폼입니다.
 
 더존비즈온 Cloud DX Academy 팀 프로젝트 · 대표 시연: **3인 제주 2박 3일**
 
-## 담당 역할
+## 제가 맡은 일
 
-**이시우 — 서비스 기획 · 프론트엔드 구현 · API 연동 · 시연·발표 자료 구성**
+**이시우 — 서비스 기획 · React 프론트엔드 · API 연동 · 시연·발표**
 
-여행 조건 입력부터 일정 확인·수정까지의 화면을 설계하고 React로 구현했습니다. 백엔드·인프라 담당자와 협업해 선택한 조건을 서버에 전달하고, 결과를 화면에 표시했습니다.
+예산, 날짜, 교통편, 숙소처럼 서로 영향을 주는 조건을 **사용자가 선택하는 순서로 연결**했습니다. 일정 편집·지도·경비·모바일 화면을 구현하고, 백엔드·인프라 담당자와 협업해 요청·응답과 처리 상태를 화면에 연결했습니다.
 
-## 여행 중에도 사용하는 모바일
+## 핵심 설계 판단
 
-PC에서 세운 계획을 모바일로 확인하고, 현지에서 방문 순서나 식당을 바꿀 수 있습니다. 변경한 뒤에는 이동 경로를 확인합니다.
+**예산 → 출발지·목적지 → 날짜 → 교통·숙소 → 취향 → 일정 생성**
 
-| 방문 순서 변경 | 대체 장소 선택 | 이동 경로 확인 |
-| --- | --- | --- |
-| [![모바일 일정 확인](docs/images/mobile-itinerary.jpg)](https://siu92.github.io/TripBuddy/?play=1&t=338#demo) | [![모바일 대체 장소 선택](docs/images/mobile-place.jpg)](https://siu92.github.io/TripBuddy/?play=1&t=345#demo) | [![모바일 이동 경로](docs/images/mobile-route.jpg)](https://siu92.github.io/TripBuddy/?play=1&t=360#demo) |
-
-**[모바일 화면과 시연 보기 →](https://siu92.github.io/TripBuddy/#mobile)**
-
-## UI·UX에서 고민한 선택
-
-| 설계한 부분 | 이유 |
+| 판단 | 설계 이유 |
 | --- | --- |
-| 예산을 첫 단계에 배치 | 주어진 예산을 교통·숙소 선택과 일정 생성의 기준으로 쓰기 위해 |
-| 출발지는 행정권역·주소로 선택 | 자차 이동 시간에 영향을 주는 출발 위치를 자세히 정하기 위해 |
-| 목적지는 관광 지역·명소로 선택 | ‘속초나 해운대에 가고 싶다’는 여행자의 생각에 맞추기 위해 |
-| 날짜를 교통·숙소보다 먼저 선택 | 여행 날짜를 알아야 교통편과 객실 상황을 고려할 수 있기 때문에 |
-| 출발시각은 자차 선택 때 입력 | 항공·KTX는 티켓 시각을 사용하고, 자차는 직접 정해야 하기 때문에 |
-| 여행 테마·음식 취향은 마지막에 선택 | 이동·숙박 조건을 갖춘 뒤 개인 취향을 일정에 더하기 위해 |
+| 예산을 첫 단계에 | 주어진 예산을 교통·숙소 선택과 일정 생성의 기준으로 사용 |
+| 출발지와 목적지는 다르게 | 출발지는 이동 계산을 위한 시·구·동·주소, 목적지는 여행자가 떠올리는 관광 지역·명소 |
+| 날짜와 숙소를 먼저 확정 | 날짜가 교통편·객실 선택의 조건이고, 숙소 위치가 주변 동선의 기준 |
 
-날짜는 두 달을 나란히 보여주는 캘린더에서 선택합니다. 완성된 일정은 시간표와 지도에서 확인하고, 방문 순서를 바꾸거나 다른 장소로 교체할 수 있습니다.
+### 설계를 바꾼 사례: 출발시각 입력
 
-**[각 설계의 이유와 실제 화면을 웹에서 보기 →](https://siu92.github.io/TripBuddy/#ux)**
+처음에는 날짜 화면에 출발시각을 넣었습니다. 하지만 항공·KTX는 **티켓 시각이 일정의 기준**이므로 공통 날짜 화면에서 시간 입력을 제거했습니다. 대신 자차를 고른 경우에만 출발·도착 시각을 직접 설정하도록 바꿨습니다.
 
-## 국내 다른 여행지로 확장
+**필요한 정보가 필요한 단계에서 입력되도록** 교통수단별 흐름을 나눈 판단입니다.
 
-제주는 대표 시연입니다. **지역별 장소·교통·숙소·경로 데이터가 확보되면 국내 다른 출발지와 목적지에도 같은 방식으로 일정을 만들고 수정할 수 있도록 설계했습니다.**
+[현재 화면과 설계 변경 이유 보기 →](https://siu92.github.io/TripBuddy/#decision)
+
+## 실제 화면과 동작
+
+**날짜별 시간표 · 이동 경로 · 예상 경비를 같은 화면에서 확인합니다.** 순서를 바꾸거나 장소를 교체한 뒤 이동 경로를 다시 확인할 수 있습니다.
+
+[일정 편집 화면과 배치 이유 보기 →](https://siu92.github.io/TripBuddy/#result)
+
+PC에서 만든 계획을 모바일로 확인하고, 여행 중에도 방문 순서와 장소를 바꿀 수 있습니다.
+
+**[모바일 화면과 실제 시연 보기 →](https://siu92.github.io/TripBuddy/#mobile)**
+
+## 국내 여행으로 확장하는 구조
+
+제주는 대표 시연입니다. **지역별 장소·교통·숙소·경로 데이터가 확보되면** 다른 국내 출발지와 목적지에도 같은 일정 생성·수정 흐름을 적용하도록 설계했습니다.
 
 ## 영상·발표자료
 
@@ -61,6 +62,17 @@ PC에서 세운 계획을 모바일로 확인하고, 현지에서 방문 순서�
 ## 구현 근거
 
 [API 공통 처리](frontend/src/api/apiClient.js) · [AI 일정 연동](frontend/src/api/tripPlanApi.js) · [일정 편집 화면](frontend/src/components/planner/PlanFullscreen.jsx) · [경비 계산](frontend/src/utils/costEstimate.js)
+
+<details>
+<summary>설계 근거와 다음 사용자 검증 과제</summary>
+
+현재 시연은 조건 입력, 일정 생성·수정과 모바일 구현을 보여줍니다. 입력 순서의 편의성 향상이나 이탈률 감소를 사용자 테스트로 입증한 수치는 제시하지 않았습니다.
+
+다음 검증에서는 ‘예산 안에서 2박 3일 여행 만들기’와 ‘여행 중 식당 한 곳 바꾸기’ 과제로 혼란·되돌아가기·버튼 발견·변경된 동선 이해를 관찰하고, 화면 수정 전후의 같은 과제 수행을 비교하려 합니다. **향후 계획이며 완료된 조사가 아닙니다.**
+
+캘린더, 테마·음식 취향과 추가 화면은 [웹 포트폴리오의 상세 설계](https://siu92.github.io/TripBuddy/#design-details)에 모았습니다.
+
+</details>
 
 <details>
 <summary>시연 범위와 운영 안내</summary>
