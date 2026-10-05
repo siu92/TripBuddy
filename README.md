@@ -59,7 +59,7 @@ PC에서 만든 계획을 모바일로 확인하고, 여행 중에도 방문 순
 | 자료 | 웹에서 보기 | 다운로드 |
 | --- | --- | --- |
 | 실제 시연 · 1080p / 약 6분 21초 | [영상 재생](https://siu92.github.io/TripBuddy/?play=1#demo) | [MP4](https://github.com/siu92/TripBuddy/releases/download/demo-2026-10-02/TripBuddy_demo.mp4) |
-| 기획·구현 발표 · 46장 | [슬라이드 넘겨보기](https://siu92.github.io/TripBuddy/#presentation) | [PDF](https://github.com/siu92/TripBuddy/releases/download/demo-2026-10-02/TripBuddy_presentation.pdf) · [PPT](https://github.com/siu92/TripBuddy/releases/download/demo-2026-10-02/TripBuddy_presentation.pptx) |
+| 기획·구현 발표 · 46장 | [고해상도 슬라이드 보기](https://siu92.github.io/TripBuddy/#presentation) | [PPT](https://github.com/siu92/TripBuddy/releases/download/demo-2026-10-02/TripBuddy_presentation.pptx) |
 
 ## 구현 근거
 
