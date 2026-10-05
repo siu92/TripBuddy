@@ -16,25 +16,26 @@ body{background:#f8faf7}header{background:#f8faf7}nav strong{font-weight:800;let
 @media(max-width:1050px){.hero{padding:36px 28px;gap:22px;min-height:530px}.project-wordmark{font-size:58px}.hero h1{font-size:29px}.hero .lead{font-size:16px}.hero .button{font-size:13px;padding:10px 12px}.hero .primary span{margin-left:8px}.hero-visual{padding-bottom:100px}.hero-phone{width:33%;right:-5px}}
 @media(max-width:760px){main{padding:24px 18px 40px}.hero{grid-template-columns:1fr;padding:32px 24px 12px;margin:0 0 26px;gap:0;min-height:0;border-radius:18px}.project-wordmark{font-size:60px;letter-spacing:-3px;margin:22px 0}.hero h1{font-size:27px}.hero .lead{font-size:16px}.hero-visual{max-width:540px;width:100%;margin:0 auto;padding:30px 20px 76px 0}.hero-phone{width:27%;max-width:130px;right:3px;bottom:20px}.visual-orbit{inset:0 -60px -10px 50px}.hero-role{font-size:12px;margin-bottom:4px}.visual-caption{font-size:10px;margin-top:12px}.case-navigation{grid-template-columns:1fr 1fr;gap:12px;padding-bottom:24px}.case-navigation a{font-size:13px}main>section:not(.hero){padding:36px 0}.contribution{padding:20px;gap:22px}.mobile-gallery{padding:26px 16px 20px}.mobile-gallery figure:first-child{max-width:260px}.decision-compare>div{padding:20px}.core-decisions article{padding-left:18px}footer{padding:26px 18px}}
 
+.contribution .pm-role{grid-column:1/-1;border-bottom:1px solid #d4dfd6;padding-bottom:22px}.contribution .pm-role h3{color:var(--green)}.contribution .pm-role p{max-width:900px}
 </style>
 </head>
 <body>
 <header><nav aria-label="주요 메뉴"><strong>TripBuddy / 이시우</strong><a href="#demo">시연</a><a href="#ux">설계 판단</a><a href="#mobile">모바일</a><a href="#presentation">발표자료</a><a href="https://github.com/siu92/TripBuddy">GitHub</a></nav></header>
 <main>
 <section class="hero">
-<div class="hero-copy"><div class="eyebrow">이시우 · UI·UX 설계 / 프론트엔드 구현</div>
+<div class="hero-copy"><div class="eyebrow">이시우 · PM / UI·UX 설계 / 프론트엔드 구현</div>
 <p class="project-wordmark">TripBuddy<span class="brand-dot" aria-hidden="true">.</span></p>
 <h1>여행의 조건을 연결해,<br>계획부터 변경까지</h1>
 <p class="lead">예산 안에서 국내 여행 일정을 만들고,<br>여행 중에도 모바일로 바꾸는 서비스.</p>
 <div class="actions"><a class="button primary" href="#ux">설계 과정 보기 <span aria-hidden="true">↗</span></a><a class="button" href="#demo" id="hero-play">▶ 실제 시연</a></div>
-<p class="hero-role">서비스 기획 · React 화면 구현 · API 연동<br>Cloud DX Academy 팀 프로젝트</p></div>
+<p class="hero-role">PM · 서비스 기획 · React 화면 구현 · API 연동<br>Cloud DX Academy 팀 프로젝트</p></div>
 <div class="hero-visual"><div class="visual-orbit" aria-hidden="true"></div><div class="browser-frame"><div class="browser-bar" aria-hidden="true"><i></i><i></i><i></i><span>TripBuddy / Plan your journey</span></div><a href="#result" aria-label="실제 일정 편집 화면과 설계 설명 보기"><img src="images/itinerary.jpg" alt="TripBuddy 실제 PC 일정 편집 화면" width="1440" height="810" fetchpriority="high"></a></div><a class="hero-phone" href="#mobile" aria-label="모바일 구현 화면 보기"><img src="images/mobile-itinerary.jpg" alt="TripBuddy 실제 모바일 일정 화면" width="390" height="780"></a><p class="visual-caption">실제 구현 화면 · PC &amp; Mobile</p></div>
 </section>
 <div class="case-navigation" aria-label="포트폴리오 읽기 순서"><a href="#problem"><span>01</span> 문제와 역할</a><a href="#ux"><span>02</span> 설계 판단</a><a href="#result"><span>03</span> 실제 구현</a><a href="#presentation"><span>04</span> 발표자료</a></div>
 <section id="problem"><div class="eyebrow">문제와 담당 역할</div><h2>여행 조건은 따로 정할 수 없었습니다</h2>
 <p>예산은 교통편과 숙소 선택에 영향을 주고, 날짜와 숙소 위치는 여행 동선을 바꿉니다. 여행지에서 계획이 달라지면 이동 경로와 경비도 다시 확인해야 합니다.</p>
 <p>저는 이 조건들을 <strong>사용자가 선택하는 순서로 연결하고, 생성한 일정을 직접 수정할 수 있는 화면</strong>을 설계·구현했습니다.</p>
-<div class="contribution"><div><h3>제가 맡은 범위</h3><p>입력 흐름과 화면 구성, React 프론트엔드, 지도·일정 편집·모바일 화면, API 연동</p></div><div><h3>팀과 연결한 범위</h3><p>백엔드·인프라 담당자와 요청·응답 형식을 맞추고, 생성 결과와 처리 상태를 화면에 연결</p></div></div>
+<div class="contribution"><div class="pm-role"><h3>PM · 프로젝트 진행 총괄</h3><p>프로젝트 타임라인을 수립하고, 팀원별 역할과 작업 기한을 정해 진행 상황과 기한 준수를 관리했습니다. 멘토링 자료 준비와 팀 회의 진행도 맡아 <strong>일정 관리부터 기획·구현·발표까지 프로젝트 전 과정을 이끌었습니다.</strong></p></div><div><h3>직접 설계·구현한 범위</h3><p>입력 흐름과 화면 구성, React 프론트엔드, 지도·일정 편집·모바일 화면, API 연동</p></div><div><h3>팀과 연결한 범위</h3><p>백엔드·인프라 담당자와 요청·응답 형식을 맞추고, 생성 결과와 처리 상태를 화면에 연결</p></div></div>
 </section>
 <section id="demo"><div class="eyebrow">시연 영상</div><h2>먼저, 실제 동작을 확인하세요</h2><p class="muted">제주 2박 3일 계획을 만들고 수정하는 실제 시연입니다. 원하는 장면부터 볼 수 있습니다.</p><video id="demo-video" controls playsinline preload="metadata" poster="images/demo-poster.jpg"><source src="media/TripBuddy_demo.mp4" type="video/mp4">브라우저가 영상 재생을 지원하지 않습니다. 아래 영상 파일 링크를 이용하세요.</video><div class="chapter-list" aria-label="시연 장면 바로가기"><button data-time="63">여행 조건 선택</button><button data-time="275">일정 수정</button><button data-time="329">모바일 활용</button></div><p class="caption">1920 × 1080 · 약 6분 21초 · 자막·음성 포함</p><p class="downloads">다운로드: <a href="media/TripBuddy_demo.mp4" download>시연 영상 MP4</a></p><p id="play-message" class="caption" role="status"></p></section>
 <section id="ux"><div class="eyebrow">핵심 설계 판단</div><h2>무엇을 먼저 묻고, 무엇을 나중에 물을까</h2>
