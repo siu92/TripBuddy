@@ -101,3 +101,12 @@ footer{font-size:14px;font-weight:500;line-height:1.85;color:#4c6356}
 @media(max-width:1000px){header nav{padding-right:24px;padding-left:24px;gap:3px}header nav .nav-link{font-size:13px;padding:9px 8px}.brand-caption{font-size:9px}.brand-name{font-size:16px}.brand-monogram{width:34px;height:34px}}
 @media(max-width:760px){header nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 6px;padding:11px 18px 10px}header nav>strong{grid-column:1/-1;gap:9px;margin:0 0 6px}.brand-monogram{width:32px;height:32px;border-radius:9px}.brand-name{font-size:15px;flex-direction:row;align-items:baseline;gap:10px}.brand-caption{font-size:10px}header nav .nav-link{font-size:13px;min-height:38px;padding:8px 3px;font-weight:730}section,.implementation-case[id],#frontend{scroll-margin-top:176px}.intro{font-size:17px}.hero .eyebrow{font-size:11px}.hero h1{font-weight:780}.hero .lead{font-size:16px}.job-shortcuts{padding:14px;gap:4px 8px}.job-shortcuts span{width:100%;font-size:12px;margin-bottom:4px}.job-shortcuts a{width:calc(50% - 4px);font-size:12px;padding:8px 6px}.case-navigation a{font-size:13px;gap:7px}.result-strip p{font-size:15px}.problem-points-title{font-size:22px;margin-top:34px}.steps{gap:15px}.steps li{padding:20px}.steps :is(h3,h4){font-size:21px}.steps p{font-size:16px}.implementation-case h3{font-size:24px}.implementation-case p{font-size:16px;line-height:1.88}.case-result{font-size:15px!important}.mobile-gallery figcaption{font-size:12px}.source,.scope-note{font-size:13px!important}.integration-flow{padding:20px}.brand-caption{color:#52665d}}
 @media(prefers-reduced-motion:reduce){header nav .nav-link,.button,button{transition:none}}
+
+/* Actual review excerpts */
+.review-quote{margin:0;display:flex;flex-direction:column;padding:28px 26px}
+.review-quote blockquote{margin:22px 0 26px;padding:0;border:0}
+.review-quote blockquote p{margin:0;font-size:22px;font-weight:650;line-height:1.65;letter-spacing:-.025em;color:#193c2c;word-break:keep-all;overflow-wrap:anywhere}
+.review-quote figcaption{text-align:left;margin-top:auto;display:flex;flex-direction:column;gap:4px;font-style:normal;color:#455b51;font-size:13px}
+.review-quote figcaption strong{font-size:14px;color:#253e32;font-weight:700}
+.review-quote .proof-link{align-self:flex-start;margin-top:18px;font-size:13px;font-weight:700;text-underline-offset:4px}
+@media(max-width:760px){.review-quote{padding:24px 22px}.review-quote blockquote{margin:18px 0 24px}.review-quote blockquote p{font-size:20px;line-height:1.7}}

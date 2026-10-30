@@ -52,7 +52,19 @@ header nav{max-width:1220px;gap:22px}nav a[aria-current]{color:var(--green);text
 <h3 class="problem-points-title" id="problem-points-title">주요 문제점 3가지</h3><ol aria-labelledby="problem-points-title" class="steps"><li><span>PROBLEM 01</span><h4>흩어진 여행 정보</h4><p>관광지·식당·숙소·교통편 정보를 여러 곳에서 모아야 했습니다.</p></li><li><span>PROBLEM 02</span><h4>직접 맞춰야 하는 동선</h4><p>영업시간과 위치, 이동시간을 대조해 방문 순서를 정해야 했습니다.</p></li><li><span>PROBLEM 03</span><h4>변경 시 반복되는 재조율</h4><p>식당 휴무나 날씨 변화가 생기면 대체 장소와 남은 동선을 다시 찾아야 했습니다.</p></li></ol>
 </section>
 <section id="research"><div class="eyebrow">02 / 기존 서비스 검토</div><h2>일정을 추천받은 뒤에도,<br/>직접 고쳐야 하는 수고가 남았습니다</h2><p class="intro">여행 상품 비교와 AI 일정 추천은 이미 제공되고 있었습니다. 저는 여러 자료를 살펴보며, <strong>만들어진 일정을 실제 여행 조건에 맞게 수정하는 과정</strong>에 해결할 여지가 있다고 봤습니다.</p>
-<div class="review-grid"><article class="review"><span class="service">트리플 · App Store 이용 후기</span><h3>장소 추가와 날짜별 편집의 불편</h3><p>등록되지 않은 장소를 넣거나 날짜별 일정을 편집할 때 불편을 겪은 이용 사례를 확인했습니다.</p><button data-slide="6">발표자료의 후기 근거 보기 ↗</button></article><article class="review"><span class="service">Trip.com · 개별 사용 후기</span><h3>일정판에서 시작 시각 수정에 제약</h3><p>AI 프롬프트로 시각을 지정할 수 있어도, 일정 화면에서 바로 고치는 과정에는 제약이 있다는 사례가 있었습니다.</p><a class="proof-link" href="https://mtmusing.ghost.io/trip-com-itinerary-planning-beats-google-maps/" rel="noopener" target="_blank">인용 후기 원문</a></article></div><p class="source">폭넓게 검토한 자료 중 발표에 사용한 사례입니다. 개별 후기를 모든 사용자나 현재 서비스 전체의 문제로 일반화하지 않았습니다.</p>
+<div class="review-grid">
+<figure class="review review-quote">
+<span class="service">트리플 · App Store 이용 후기</span>
+<blockquote><p>“등록안된장소가 너무 많고 직접 등록하려해도 아예건물자체가 클릭이 안되는곳도 있습니다”</p></blockquote>
+<figcaption><strong>나소리아</strong><span>「솔직한 후기」 · 7월 18일 게시</span></figcaption>
+<a class="proof-link" href="https://apps.apple.com/kr/app/id1225499481?see-all=reviews" rel="noopener" target="_blank">App Store 원문 보기</a>
+</figure>
+<figure class="review review-quote">
+<span class="service">Trip.com · 여행 블로그 사용 후기</span>
+<blockquote><p>“일정 화면에 들어가면 각 여행일의 시작 시각을 수동으로 조정할 수 없습니다.”</p></blockquote>
+<figcaption><strong>MTM · Mostly Travel Musing</strong><span>2026.05.21 게시 · 영문 원문 번역</span></figcaption>
+<a class="proof-link" href="https://mtmusing.ghost.io/trip-com-itinerary-planning-beats-google-maps/" rel="noopener" target="_blank">블로그 원문 보기</a>
+</figure></div><p class="source">공개 이용 후기 중 불편을 언급한 부분을 발췌했습니다. 두 후기 모두 서비스의 편리함도 함께 평가한 글이며, 인용은 작성 당시의 개별 경험입니다.</p>
 <div class="finding"><span class="eyebrow">제가 정한 해결 과제</span><p>일정을 만들어주는 데서 그치지 않고,<br/><strong>여행 중 바뀐 계획도 직접 조정할 수 있게 만들자.</strong></p></div></section>
 <section id="result"><div class="eyebrow">03 / 완성한 서비스</div><h2>일정 생성과 여행 중 수정을<br/>하나의 서비스로 연결했습니다</h2><p class="intro">이 과제를 팀과 함께 TripBuddy로 구체화했습니다. 예산과 여행 조건을 입력하면 일정을 만들고, 결과 화면에서 장소와 방문 순서를 직접 바꿀 수 있도록 구현했습니다.</p>
 <ol aria-label="TripBuddy 이용 흐름" class="journey"><li><span>01</span><strong>여행 조건 입력</strong><p>예산·날짜·교통·숙소·취향</p></li><li><span>02</span><strong>AI 일정 생성</strong><p>조건을 반영한 날짜별 계획</p></li><li><span>03</span><strong>일정 직접 수정</strong><p>방문 순서 변경·장소 교체</p></li><li><span>04</span><strong>여행 중 활용</strong><p>모바일에서 일정·경로 확인</p></li></ol>
