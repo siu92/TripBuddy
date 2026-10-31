@@ -2,6 +2,23 @@
 
 TripBuddy는 예산과 취향에 맞춰 국내 여행의 이동, 숙소, 음식점, 관광지를 한 번에 구성하는 React 기반 여행 플래너입니다. 발표 시나리오는 3명이 함께 떠나는 제주도 2박 3일 여행이며, 사용자가 선택한 조건과 현재 예산을 바탕으로 일정과 예상 경비를 구성합니다.
 
+## 코드부터 읽으신다면
+
+**[전체 프로젝트](../README.md) · [기능별 코드 지도](../guide/CODE_MAP.md) · [화면·서버 연결](../guide/ARCHITECTURE.md) · [현재 실행 안내](../guide/DEVELOPMENT.md)**
+
+저는 서비스 기획·PM과 이 프론트엔드를 담당했습니다. 서버의 요청·응답·생성 상태를 각 담당자와 맞춰 입력부터 결과·편집까지 연결했습니다.
+
+| 위치 | 역할 |
+| --- | --- |
+| [src/App.jsx](src/App.jsx) | 홈·여행 조건·모달·결과 화면을 조합하는 진입점 |
+| [src/hooks/useTripPlanner.js](src/hooks/useTripPlanner.js) | React 상태·후보 조회·생성·편집 저장을 조율 |
+| [src/planner](src/planner) | 항공 변환·취향·서버 코드 매핑·초안 저장·편집의 독립 기능 |
+| [src/api](src/api) | 공통 HTTP·인증·응답 정규화와 기능별 서버 연동 |
+| [src/components/planner](src/components/planner) | 조건 선택과 전체 일정·지도·편집 화면 |
+| [src/utils](src/utils) | 예상 경비·시간·편집 payload 등의 공통 계산 |
+| [src/data](src/data) | 지역 목록·시연 데이터·화면 모델. 실제 API 데이터와 구분 |
+| [tests](tests) | API 계약·시간·경비·저장·생성 polling의 회귀 검사 |
+
 ## 현재 구현 범위
 
 - 출발지 행정구역과 현재 위치 선택
@@ -47,7 +64,7 @@ TripBuddy는 가능한 범위에서 실제 장소와 공공 데이터를 사용�
 Node.js와 백엔드를 먼저 실행한 뒤 프론트 폴더에서 다음 명령을 사용합니다.
 
 ```powershell
-npm install
+npm ci
 npm run dev
 ```
 
@@ -82,10 +99,10 @@ CloudFront에 배포할 때는 `dist`의 내용을 업로드하고, 이전 파�
 
 ```powershell
 npm run build
-node --test tests/*.test.mjs
+npm test
 ```
 
-2026년 10월 2일 공개 자료 정리 시 프론트 자동 테스트 30개가 통과했습니다. 운영 빌드는 환경변수를 설정한 뒤 별도로 확인해야 합니다. 제주 대표 명소 15곳의 일정 요청 이름과 좌표도 자동으로 검사합니다. `npm run build:release`는 운영 번들에 `localhost:8080`이 포함되거나 카카오 지도 키가 빠지면 실패하므로, 잘못된 파일이 배포되는 것을 사전에 차단합니다.
+기존 회귀 검사와 분리한 모듈의 계약 검사를 함께 실행합니다. `npm test`는 `.test.mjs`와 `.test.cjs`를 모두 포함하며, 최근 검증 결과는 [검증 기록](../guide/VERIFICATION.md)에 구분했습니다. 운영 빌드는 환경변수를 설정한 뒤 별도로 확인해야 합니다. 제주 대표 명소 15곳의 일정 요청 이름과 좌표도 자동으로 검사합니다. `npm run build:release`는 운영 번들에 `localhost:8080`이 포함되거나 카카오 지도 키가 빠지면 실패하므로, 잘못된 파일이 배포되는 것을 사전에 차단합니다.
 
 ## 백엔드 연결
 

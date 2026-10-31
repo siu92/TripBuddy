@@ -43,6 +43,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 일정 생성과 저장의 조율 진입점입니다.
+ * 후보 구성 → Bedrock 제안 → 실제 이동시간/항공 마감 보정 → 일정/이동 구간 저장 순서로 읽습니다.
+ * 후보 검색은 TripPlanCandidateService, 모델 응답 검증은 TripPlanBedrockService,
+ * 식사/빈 시간 보정은 TripPlanSchedulePostProcessor에 위임합니다.
+ * persistEditedPlan은 신규 AI 생성 없이 변경된 날짜만 반영하는 별도 경로입니다.
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)

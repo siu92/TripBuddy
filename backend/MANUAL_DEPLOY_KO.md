@@ -1,3 +1,5 @@
+> 당시 팀 환경의 절차·문제 해결 기록입니다. 현재 공개 저장소의 실행은 [개발 안내](../guide/DEVELOPMENT.md), 자동 검사는 [CI](../.github/workflows/code-checks.yml)를 우선합니다.
+
 # TripBuddy 백엔드 수동 배포
 
 ## 준비

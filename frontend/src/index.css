@@ -1,3 +1,8 @@
+/*
+ * 전역 스타일 진입점. 기본 토큰 → 홈/입력 → 결과/모달 → 반응형 보정이 누적되어 있습니다.
+ * 뒤쪽 규칙이 앞쪽 규칙을 덮어쓰므로 기능별로 옮기거나 정렬할 때 cascade 순서를 보존합니다.
+ * 컴포넌트 전용 CSS와 읽기 경로는 guide/CODE_MAP.md를 참고하세요.
+ */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css');
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap');
 
@@ -9,6 +14,7 @@ button, input, textarea { font: inherit; }
 button { cursor: pointer; }
 a { color: inherit; text-decoration: none; }
 
+/* ── 홈 · 헤더와 계정 메뉴 ── */
 .topbar { position: relative; z-index: 5; display: flex; align-items: center; gap: 27px; height: 74px; padding: 0 max(5vw, 42px); background: rgba(255,255,252,.97); border-bottom: 1px solid #e5ece7; }
 .topbar > .outline-button { margin-left: auto; }
 .header-reservations { min-height: 40px; padding: 0 4px; border: 0; background: transparent; color: #52736e; font-size: 11px; font-weight: 700; cursor: pointer; }
@@ -47,6 +53,7 @@ nav a:hover { color: var(--sea); }
 .header-button { padding: 11px 15px; border: 0; border-radius: 7px; background: var(--deep); color: #fff; font-size: 12px; font-weight: 700; box-shadow: 0 6px 12px rgba(6, 78, 86, .16); }
 .header-button span { margin-left: 7px; }
 
+/* ── 홈 · 서비스 소개 ── */
 .hero { position: relative; min-height: 598px; overflow: hidden; color: #fff; }
 .hero-image, .hero-shade { position: absolute; inset: 0; }
 .hero-image { background: url('https://tongglobalcdn.visitkorea.or.kr/cms/resource/42/2800542_image2_1.jpg') center 54% / cover; transform: scale(1.01); }
@@ -60,6 +67,7 @@ nav a:hover { color: var(--sea); }
 .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 43px; }
 .hero-tags span { padding: 8px 12px; border: 1px solid rgba(225, 245, 234, .48); border-radius: 20px; background: rgba(7, 63, 63, .22); color: #f6fbf6; font-size: 11px; font-weight: 600; backdrop-filter: blur(5px); }
 
+/* ── 여행 조건 입력 · 기본 레이아웃 ── */
 .planner-section { padding: 104px 5%; background: linear-gradient(180deg, #fdfdf9 0%, #f4f8f4 76%, #f3f8f4 100%); }
 .section-title, .planner-card, .section-heading, .spot-grid, .result-grid, .how { width: min(1130px, 100%); margin: auto; }
 .planner-collapsible { width: min(1130px, 100%); margin: 22px auto 0; }
@@ -238,6 +246,7 @@ nav a:hover { color: var(--sea); }
 
 @media (max-width: 760px) { .brand > strong { font-size: 21px; }.brand-mark { width: 30px; height: 30px; }.hero-inner { width: auto; margin: 0; padding-right: 20px; padding-left: 20px; }.transport-choice { grid-template-columns: 1fr; }.transport-result button { width: 100%; margin-left: 0; }.independent-booking-tools { display: grid; }.independent-booking-tools > span { justify-content: flex-start; }.rental-catalog { grid-template-columns: 1fr; }.stay-ai-recommendation { display: grid; }.stay-ai-recommendation em { margin-left: 29px; }.ai-modal { padding: 25px 18px; }.ai-modal > h3 { font-size: 25px; }.ai-option-grid { grid-template-columns: repeat(2, 1fr); }.ai-option-grid.local-options { grid-template-columns: repeat(2, 1fr); }.ai-option-grid button { min-height: 105px; }.flight-modal { padding: 25px 16px; } }
 
+/* ── 입력 흐름 보정 · 기존 선택자 우선순위 보존 ── */
 /* 입력 순서와 제휴 혜택 안내 */
 .form-area > .prompt-area { margin-top: 0; }.prompt-area + .early-budget { margin-top: 28px; }.prompt-area > label { display: block; }.prompt-area .prompt-box { margin-bottom: 0; }.form-fields { margin-top: 18px; }.preference-area + .waiting-booking { display: none; }.form-fields + .waiting-booking { margin-top: -10px; margin-bottom: 18px; border-color: #c9e1d8; background: #f5fbf8; }.form-fields + .waiting-booking b::before { margin-right: 7px; color: var(--sea); content: '✦ AI 안내'; font: 800 9px 'DM Mono'; }
 .transport-choice + .booking-section .booking-summary::before, .booking-section:has(.stay-picker) .booking-summary::before { display: block; grid-column: 1 / -1; margin-bottom: 2px; padding: 9px 10px; border: 1px solid #bde0d4; border-radius: 7px; background: linear-gradient(90deg, #ecfaf4, #fbfffd); color: #246f66; font-size: 10px; font-weight: 700; content: '✦ TripBuddy 항공 제휴 혜택 · 특가 노선, 출발 시간, 잔여 좌석을 한 번에 비교하세요'; }.booking-section:has(.stay-picker) .booking-summary::before { border-color: #f0d1ba; background: linear-gradient(90deg, #fff4ec, #fffcf7); color: #aa6034; content: '✦ TripBuddy 숙소 제휴 혜택 · 무료 취소·조식 포함 여부와 특가 객실을 한눈에 확인하세요'; }.stay-ai-recommendation::after { display: block; align-self: center; margin-left: auto; padding: 5px 7px; border-radius: 5px; background: #fff3eb; color: #c46237; content: '무료 취소 · 조식 포함 · 잔여 객실'; font-size: 8px; font-weight: 800; white-space: nowrap; }

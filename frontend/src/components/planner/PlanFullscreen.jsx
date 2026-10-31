@@ -1,3 +1,6 @@
+/**
+ * 생성된 일정의 전체 화면. 날짜/보기 전환, 장소 상세와 편집 UI를 담당합니다. 변경은 전달받은 콜백을 호출하며 서버 저장은 useTripPlanner와 planEditorApi가 담당합니다.
+ */
 import { useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { ArrowDown, CarFront, ExternalLink, GripVertical, MapPin, Minus, Monitor, Plus, Smartphone, Star, X } from "lucide-react";

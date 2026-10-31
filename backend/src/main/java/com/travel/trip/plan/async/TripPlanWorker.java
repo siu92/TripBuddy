@@ -19,6 +19,11 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
+/**
+ * worker 역할 프로세스에서만 SQS 메시지를 수신하는 비동기 실행 경계입니다.
+ * API의 작업 접수/발행은 TripPlanRequestService와 TripPlanQueuePublisher를 확인합니다.
+ * 작업 상태 갱신과 메시지 삭제/실패 처리를 함께 읽어야 재시도 동작을 이해할 수 있습니다.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor

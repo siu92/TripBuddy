@@ -24,6 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 선별된 후보를 모델 입력으로 조합하고 응답 ID/일자/필수 방문지를 검증합니다.
+ * 모델 호출 자체는 external.bedrock.BedrockClient가 담당합니다.
+ * 이 서비스의 결과는 최종 저장 전 TripPlanService에서 실제 경로·시간으로 다시 보정됩니다.
+ */
 @Service
 public class TripPlanBedrockService {
 

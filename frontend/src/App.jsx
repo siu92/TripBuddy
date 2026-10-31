@@ -1,3 +1,6 @@
+/**
+ * React 화면 진입점. 홈·계정·조건 입력·모달을 조합하며, 여행 상태와 API 조율은 hooks/useTripPlanner.js에 위임합니다. 핵심 결과 화면은 components/planner/PlanFullscreen.jsx입니다.
+ */
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,

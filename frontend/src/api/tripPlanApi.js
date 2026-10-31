@@ -1,3 +1,6 @@
+/**
+ * 비동기 일정 생성 API와 응답 정규화 경계. 먼저 requestTripPlan → getTripPlanStatus를 읽고, normalizeTripPlanResponse에서 서버 DTO가 날짜별 화면 모델로 변환되는 과정을 확인하세요. 편집 저장은 planEditorApi.js가 담당합니다.
+ */
 import { apiClient } from "./apiClient.js";
 import { isAirportName } from "../utils/routeFilters.js";
 
