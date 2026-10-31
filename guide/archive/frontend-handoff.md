@@ -177,4 +177,3 @@
 아래 문장을 새 Codex 작업창에 붙여 넣으면 된다.
 
 > `C:\frontend\frontend\CODEX_HANDOFF.md`를 먼저 읽고, 현재 TripBuddy 프로젝트 작업을 이어서 진행해 주세요. 기존 기능을 임의로 삭제하지 말고, 수정 뒤에는 `npm run build`로 확인해 주세요. 큰 기능 변경이 끝나면 `Backup 파일` 폴더에 ZIP 백업도 만들어 주세요.
-
