@@ -19,6 +19,10 @@ TripBuddy는 예산과 취향에 맞춰 국내 여행의 이동, 숙소, 음식�
 | [src/data](src/data) | 지역 목록·시연 데이터·화면 모델. 실제 API 데이터와 구분 |
 | [tests](tests) | API 계약·시간·경비·저장·생성 polling의 회귀 검사 |
 
+## 구현 판단과 검증
+
+[생성 상태·중복 항공 조회·편집 저장 사례](../guide/DECISIONS.md)에서 문제와 구현 근거를 확인하실 수 있습니다. [검증 결과](../guide/VERIFICATION.md)와 [다음 개선 과제](../guide/NEXT_STEPS.md)는 완료/미완료를 구분했습니다.
+
 ## 현재 구현 범위
 
 - 출발지 행정구역과 현재 위치 선택
