@@ -298,6 +298,8 @@ function App() {
     stayLoading,
     stayError,
     loadStayOptions,
+    stayCustomArea,
+    setStayCustomArea,
     stayArea,
     setStayArea,
     priceBand,
@@ -1421,6 +1423,17 @@ function App() {
                         ),
                       )}
                     </div>
+                    <label className="custom-area-field">
+                      <span>⌖</span>
+                      <input
+                        type="text"
+                        value={stayCustomArea}
+                        onChange={(event) => setStayCustomArea(event.target.value)}
+                        placeholder="지역 이름을 입력하세요"
+                        aria-label="기타 숙소 지역 입력"
+                      />
+                      <small>입력한 지역은 AI 일정 재설계에 반영돼요.</small>
+                    </label>
                     {stayLoading ? (
                       <div className="empty-catalog">
                         <b>

@@ -1,8 +1,10 @@
+import { useTripCostEstimate } from "./useTripCostEstimate.js";
+import { useFlightOptions } from "./useFlightOptions.js";
+import { useStayOptions } from "./useStayOptions.js";
+import { usePlannerNotice } from "./usePlannerNotice.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { preconnect, preload } from "react-dom";
 import { isMockModeEnabled } from "../api/apiClient";
-import { recommendAccommodations } from "../api/accommodationApi";
-import { searchFlights } from "../api/flightApi";
 import { createTrip } from "../api/tripApi";
 import {
   loadPlanEditor,
@@ -25,34 +27,20 @@ import {
   applyPlanEdits,
   demoRentalsForLocation,
   distanceBetween,
-  estimateIntercityFare,
-  eventPrice,
-  flightOriginAirports,
   getDates,
   heroSlides,
   jejuRegionOptions,
-  localOptions,
   makeDayPlans,
-  money,
   outboundOptions,
   placeEntryCost,
   today,
   transportName,
 } from "../data/mockData";
-import { getPlaceCostEstimate } from "../utils/placeCostEstimates";
-import {
-  addPriceVariationBuffer,
-  stablePlanEstimate,
-  sumCostGroups,
-} from "../utils/costEstimate.js";
 import { buildPlanEditRequest } from "../utils/planEditPayload.js";
-import { isAirportRouteSegment } from "../utils/routeFilters.js";
 import { locationRequestName } from "../utils/locationPayload.js";
-
 import {
   flightTimeLabel,
   flightDurationMinutes,
-  flightLocationName,
   normalizeFlightCandidate,
   flightDepartureClockMinutes,
   toFlightCandidatePayload,
@@ -84,7 +72,6 @@ import {
   FOOD_FROM_BACKEND,
 } from "../planner/domainMappings.js";
 import {
-  saveTripCostSnapshot,
   getTripCostSnapshot,
   readInitialDraft,
 } from "../planner/plannerStorage.js";
@@ -96,6 +83,8 @@ import {
  * 입력 변경에 따른 후속 선택 초기화와 effect 순서는 서로 의존하므로 함께 확인합니다.
  */
 function useTripPlanner() {
+  const { message, notify } = usePlannerNotice();
+
   // ── 01. 저장된 초안을 읽고 입력·모달 상태를 초기화합니다. ──
   const [initialDraft] = useState(() => readInitialDraft(today));
 
@@ -309,9 +298,29 @@ function useTripPlanner() {
 
   const [transportStep, setTransportStep] = useState("mode");
 
-  const [origin, setOrigin] = useState(
-    initialBookingSelection.outboundFlight?.departureAirport || "GMP",
-  );
+  const {
+    origin,
+    setOrigin,
+    flightId,
+    setFlightId,
+    returnFlightId,
+    setReturnFlightId,
+    flightSearchResult,
+    setFlightSearchResult,
+    flightLoading,
+    flightError,
+    setFlightError,
+    loadFlightOptions,
+    invalidateFlightOptions,
+  } = useFlightOptions({
+    initialBookingSelection,
+    departureLocation,
+    destinationLocation,
+    startDate,
+    endDate,
+    travelers,
+    notify,
+  });
 
   const [flightOpen, setFlightOpen] = useState(false);
 
@@ -320,34 +329,6 @@ function useTripPlanner() {
   const [flightTransitionOpen, setFlightTransitionOpen] = useState(false);
 
   const [flightSort, setFlightSort] = useState("recommended");
-
-  const [flightId, setFlightId] = useState(
-    initialBookingSelection.outboundFlight?.id || "",
-  );
-
-  const [returnFlightId, setReturnFlightId] = useState(
-    initialBookingSelection.returnFlight?.id || "",
-  );
-
-  const [flightSearchResult, setFlightSearchResult] = useState({
-    departureAirport:
-      initialBookingSelection.outboundFlight?.departureAirport || "",
-
-    arrivalAirport:
-      initialBookingSelection.outboundFlight?.arrivalAirport || "",
-
-    outboundFlights: initialBookingSelection.outboundFlight
-      ? [initialBookingSelection.outboundFlight]
-      : [],
-
-    returnFlights: initialBookingSelection.returnFlight
-      ? [initialBookingSelection.returnFlight]
-      : [],
-  });
-
-  const [flightLoading, setFlightLoading] = useState(false);
-
-  const [flightError, setFlightError] = useState("");
 
   const [rentalOpen, setRentalOpen] = useState(false);
 
@@ -371,16 +352,22 @@ function useTripPlanner() {
 
   const [stayOpen, setStayOpen] = useState(false);
 
-  /*
-   * 실제 숙소 추천 API 결과
-   */
-  const [stayCatalog, setStayCatalog] = useState(
-    initialBookingSelection.stay ? [initialBookingSelection.stay] : [],
-  );
-
-  const [stayLoading, setStayLoading] = useState(false);
-
-  const [stayError, setStayError] = useState("");
+  const {
+    stayCatalog,
+    setStayCatalog,
+    stayLoading,
+    stayError,
+    setStayError,
+    stayId,
+    setStayId,
+    loadStayOptions,
+    invalidateStayOptions,
+  } = useStayOptions({
+    initialBookingSelection,
+    destinationLocation,
+    stayOpen,
+    notify,
+  });
 
   const [stayArea, setStayArea] = useState("전체");
 
@@ -414,8 +401,6 @@ function useTripPlanner() {
   const [staySearch, setStaySearch] = useState("");
 
   const [staySort, setStaySort] = useState("review");
-
-  const [stayId, setStayId] = useState(initialBookingSelection.stay?.id || "");
 
   const [stayChange, setStayChange] = useState(null);
 
@@ -460,8 +445,6 @@ function useTripPlanner() {
     backendPlanRef.current = backendPlan;
   }, [backendPlan]);
 
-  const [message, setMessage] = useState("");
-
   useEffect(() => {
     if (!stayOpen) {
       return;
@@ -484,54 +467,6 @@ function useTripPlanner() {
 
     setStayCustomArea("");
   }, [destinationLocation, stayOpen]);
-
-  useEffect(() => {
-    const filterBar = document.querySelector(".stay-picker .area-filters");
-
-    if (!filterBar) {
-      return undefined;
-    }
-
-    let field = document.querySelector(".stay-picker .custom-area-field");
-
-    if (!field) {
-      field = document.createElement("label");
-
-      field.className = "custom-area-field";
-
-      const icon = document.createElement("span");
-
-      icon.textContent = "⌖";
-
-      const input = document.createElement("input");
-
-      input.type = "text";
-
-      input.placeholder = "지역 이름을 입력하세요";
-
-      input.setAttribute("aria-label", "기타 숙소 지역 입력");
-
-      const hint = document.createElement("small");
-
-      hint.textContent = "입력한 지역은 AI 일정 재설계에 반영돼요.";
-
-      input.addEventListener("input", (event) =>
-        setStayCustomArea(event.currentTarget.value),
-      );
-
-      field.append(icon, input, hint);
-
-      filterBar.insertAdjacentElement("afterend", field);
-    }
-
-    const input = field.querySelector("input");
-
-    if (input && input.value !== stayCustomArea) {
-      input.value = stayCustomArea;
-    }
-
-    return undefined;
-  }, [stayArea, stayCustomArea, stayOpen]);
 
   const isJeju = destinationLocation?.regionCode === "KR-49";
 
@@ -980,1096 +915,45 @@ function useTripPlanner() {
       );
     });
 
-  const originLabel =
-    departureLocation?.detail ||
-    departureLocation?.name ||
-    departureLocation?.region ||
-    "출발지";
-
-  const destinationLabel =
-    destinationLocation?.detail ||
-    destinationLocation?.name ||
-    destinationLocation?.region ||
-    "선택한 여행지";
-
-  const selectedTransportMode = transport || (selectedFlight ? "FLIGHT" : "");
-
-  const selectedTransportLabel = transportName(
-    selectedTransportMode,
-    outboundOptions,
-  );
-
-  const selectedLocalTransportLabel = transportName(
+  const {
+    intercityTransportTotal,
+    costForEvent,
+    foodTotal,
+    activityTotal,
+    stayTotal,
+    driveTotal,
+    total,
+    reconciledCostDetails,
+    confirmedTotal,
+    confirmedInBudget,
+    gap,
+    inBudget,
+  } = useTripCostEstimate({
+    destinationLocation,
+    departureLocation,
+    budget,
+    transport,
     localTransport,
-    localOptions,
-  );
-
-  const intercityTransportTotal =
-    selectedTransportMode === "FLIGHT"
-      ? selectedFlight?.fare || 0
-      : selectedTicket
-        ? selectedTicket.fare
-        : selectedTransportMode
-          ? estimateIntercityFare({
-              mode: selectedTransportMode,
-
-              origin: departureLocation,
-
-              destination: destinationLocation,
-
-              travelers: party,
-            })
-          : 0;
-
-  const routedItineraryDistanceKm = (backendPlan?.routes || [])
-    .flatMap((route) => route?.segments || [])
-    .filter((segment) => !isAirportRouteSegment(segment))
-    .reduce((sum, segment) => {
-      const distance = Number(segment?.distanceKm);
-      return sum + (Number.isFinite(distance) && distance > 0 ? distance : 0);
-    }, 0);
-
-  const itineraryDistanceKm =
-    routedItineraryDistanceKm > 0
-      ? Math.round(routedItineraryDistanceKm * 10) / 10
-      : Math.max(
-          45,
-          Math.round(nights * 72 + Object.keys(planEdits).length * 18),
-        );
-
-  const vehicleEfficiency = VEHICLE_EFFICIENCY_KMPL[carType] || 12.5;
-
-  const backendVehicleRouteCostTotal = (backendPlan?.routes || [])
-    .flatMap((route) => route?.segments || [])
-    .filter((segment) =>
-      ["RENTAL_CAR", "OWN_CAR"].includes(
-        String(segment?.mode || "").toUpperCase(),
-      ),
-    )
-    .reduce((sum, segment) => {
-      const cost = Number(segment?.cost);
-      return sum + (Number.isFinite(cost) && cost > 0 ? cost : 0);
-    }, 0);
-
-  const selectedVehicleFuelType =
-    localTransport === "RENTAL" && selectedRental
-      ? inferRentalFuelType(selectedRental)
-      : VEHICLE_FUEL_TYPE_MAP[carFuel] || "GASOLINE";
-
-  const fuelPrice =
-    {
-      휘발유: 1750,
-
-      경유: 1650,
-
-      LPG: 1100,
-    }[carFuel] || 1750;
-
-  const localFuelAndParkingTotal =
-    backendVehicleRouteCostTotal > 0
-      ? Math.round(backendVehicleRouteCostTotal + nights * 9000)
-      : selectedVehicleFuelType === "ELECTRIC"
-        ? Math.round(nights * 9000)
-        : Math.round(
-            (itineraryDistanceKm / vehicleEfficiency) * fuelPrice +
-              nights * 9000,
-          );
-
-  const usesRental = localTransport === "RENTAL" && Boolean(selectedRental);
-
-  const rentalFeePerPerson = usesRental ? selectedRental.price / party : 0;
-
-  const localFuelAndParkingPerPerson =
-    usesRental || selectedTransportMode === "CAR"
-      ? localFuelAndParkingTotal / party
-      : 0;
-
-  const localTransitTotal =
-    localTransport === "TRANSIT"
-      ? Math.max(
-          6000,
-
-          nights * 12000 + 5000,
-        )
-      : localTransport === "TAXI"
-        ? Math.max(
-            18000,
-
-            nights * 28000 + 10000,
-          )
-        : 0;
-
-  const localTravelTotal =
-    rentalFeePerPerson + localFuelAndParkingPerPerson + localTransitTotal;
-
-  const tripDurationLabel = `${nights}박 ${Math.max(1, nights + 1)}일`;
-
-  const costForEvent = (name, metadata = {}) => {
-    const suppliedPrice = Number(metadata.pricePerPerson);
-    if (Number.isFinite(suppliedPrice) && suppliedPrice > 0)
-      return suppliedPrice;
-
-    const estimated = getPlaceCostEstimate(name, metadata);
-    if (estimated.price > 0) return estimated.price;
-
-    return eventPrice(name, {
-      selectedFlight,
-      selectedRental,
-      selectedStay,
-      party,
-      rooms,
-      nights,
-    });
-  };
-
-  const itineraryCostRows = dayPlans.flatMap((day, dayIndex) =>
-    (day?.[2] || []).flatMap(([time, icon, name, , , , metadata = {}]) => {
-      const backendType = String(metadata?.type || "").toUpperCase();
-
-      /*
-       * 비용 상세에는 실제로 개인별 결제가 발생하는 장소만 넣는다.
-       * FLIGHT / AIRPORT / ACCOMMODATION 같은 이동·예약 이벤트는
-       * 아래의 항공권·숙소·렌터카 그룹에서 한 번만 계산하므로
-       * 일정 장소 비용에 다시 넣으면 중복 노출된다.
-       */
-      const isBackendMeal =
-        backendType === "RESTAURANT" || backendType === "CAFE";
-
-      const isBackendActivity = backendType === "ATTRACTION";
-
-      const hasBackendType = Boolean(backendType);
-
-      if (
-        !name ||
-        (hasBackendType && !isBackendMeal && !isBackendActivity) ||
-        (!hasBackendType &&
-          /항공|공항|렌터카|숙소|호텔|체크인|체크아웃|탑승 준비|출발 준비|귀가|이동 준비|편 출발$/.test(
-            name,
-          ))
-      ) {
-        return [];
-      }
-
-      const isMeal =
-        isBackendMeal ||
-        (!hasBackendType &&
-          (/🍽|🍚|🍜|🍲|☕|🥐/.test(icon || "") ||
-            /점심|저녁|식사|카페|간식|조식|시장/.test(name)));
-
-      const placeEstimate = getPlaceCostEstimate(name, metadata);
-
-      return [
-        {
-          type: isMeal ? "meal" : "activity",
-
-          row: [
-            name,
-
-            costForEvent(name, metadata),
-
-            `${dayIndex + 1}일차 ${time} · ${
-              metadata.provider
-                ? `${metadata.provider} 제공가`
-                : isMeal
-                  ? `${placeEstimate.source} · 1인 예상`
-                  : "1인 입장·체험 기준"
-            }`,
-          ],
-        },
-      ];
-    }),
-  );
-
-  const mealRows = itineraryCostRows
-    .filter((item) => item.type === "meal")
-    .map((item) => item.row);
-
-  const activityRows = itineraryCostRows
-    .filter((item) => item.type === "activity")
-    .map((item) => item.row);
-
-  const foodTotal = mealRows.reduce(
-    (sum, [, value]) => sum + value,
-
-    0,
-  );
-
-  const activityTotal = Math.max(
-    0,
-
-    activityRows.reduce(
-      (sum, [, value]) => sum + value,
-
-      0,
-    ) + placeEditAdjustment,
-  );
-
-  /*
-   * 숙소 비용 계산은 priceAvg 기준.
-   * null이면 계산에서는 0 처리.
-   * 숙소 자체는 목록에서 제거하지 않음.
-   */
-  const stayTotal =
-    selectedStay?.priceAvg != null
-      ? (selectedStay.priceAvg * nights * rooms) / party
-      : 0;
-
-  const driveTotal = localTravelTotal;
-
-  const items = useMemo(
-    () => [
-      {
-        name:
-          selectedTransportMode === "FLIGHT"
-            ? "항공"
-            : selectedTransportMode
-              ? `${selectedTransportLabel} 이동`
-              : "출발 이동",
-
-        total: intercityTransportTotal,
-
-        color: "flight",
-      },
-
-      {
-        name: "숙소",
-
-        total: stayTotal,
-
-        color: "stay",
-      },
-
-      {
-        name: usesRental
-          ? "렌터카·현지 이동"
-          : localTransport
-            ? `${selectedLocalTransportLabel} 현지 이동`
-            : "현지 이동",
-
-        total: driveTotal,
-
-        color: "drive",
-      },
-
-      {
-        name: "식비",
-
-        total: foodTotal,
-
-        color: "food",
-      },
-
-      {
-        name: "관광·체험",
-
-        total: activityTotal,
-
-        color: "play",
-      },
-    ],
-    [
-      activityTotal,
-      driveTotal,
-      foodTotal,
-      intercityTransportTotal,
-      localTransport,
-      selectedLocalTransportLabel,
-      selectedTransportLabel,
-      selectedTransportMode,
-      stayTotal,
-      usesRental,
-    ],
-  );
-
-  const mockCostDetails = useMemo(
-    () =>
-      [
-        {
-          group: "개인 교통비 · 1인 기준",
-
-          rows: [
-            [
-              selectedTransportMode === "FLIGHT"
-                ? "왕복 항공권"
-                : `${selectedTransportLabel} 이동`,
-
-              intercityTransportTotal,
-
-              selectedTransportMode === "FLIGHT"
-                ? selectedFlight
-                  ? `${originLabel} ↔ ${destinationLabel} · 왕복 1인`
-                  : "가는 편과 오는 편을 모두 선택하면 반영됩니다."
-                : selectedTransportMode === "CAR"
-                  ? `${originLabel} ↔ ${destinationLabel} · 왕복 약 ${routeDistanceKm * 2}km · 유류비·통행료 ${party}명 분할`
-                  : selectedTransportMode
-                    ? `${originLabel} → ${destinationLabel} · 왕복 1인 예상`
-                    : "출발 이동수단 미선택",
-            ],
-
-            ...(localTransport && !usesRental && localTravelTotal
-              ? [
-                  [
-                    `${destinationLabel} ${selectedLocalTransportLabel}`,
-
-                    localTravelTotal,
-
-                    `${tripDurationLabel} 현지 이동 1인 예상`,
-                  ],
-                ]
-              : []),
-          ],
-        },
-
-        {
-          group: "식사·관광비 · 1인 기준",
-
-          rows: [...mealRows, ...activityRows],
-        },
-
-        {
-          group: `공동 예약·차량비 · ${party}명 N/1`,
-
-          rows: [
-            ...(usesRental
-              ? [
-                  [
-                    `${selectedRental.company} 렌터카 · ${tripDurationLabel}`,
-
-                    rentalFeePerPerson,
-
-                    `${selectedRental.car} · 총 대여료를 ${party}명 분할`,
-                  ],
-
-                  [
-                    "현지 유류·통행료·주차",
-
-                    localFuelAndParkingPerPerson,
-
-                    `${destinationLabel} 일정 약 ${itineraryDistanceKm}km · 오피넷 유가·통행료·주차 포함 · ${party}명 분할`,
-                  ],
-                ]
-              : selectedTransportMode === "CAR"
-                ? [
-                    [
-                      "현지 유류·통행료·주차",
-
-                      localFuelAndParkingPerPerson,
-
-                      `${destinationLabel} 일정 약 ${itineraryDistanceKm}km · 오피넷 유가·통행료·주차 포함 · ${party}명 분할`,
-                    ],
-                  ]
-                : []),
-
-            [
-              selectedStay ? `${selectedStay.name} · ${nights}박` : "선택 숙소",
-
-              stayTotal,
-
-              selectedStay
-                ? selectedStay.priceAvg != null
-                  ? `평균 1박 ${money(
-                      selectedStay.priceAvg,
-                    )}원 · 객실 ${rooms}개 총액을 ${party}명 분할`
-                  : `${
-                      selectedStay.priceText || "가격 정보 확인"
-                    } · 객실 ${rooms}개 · ${party}명 분할`
-                : "숙소 미선택",
-            ],
-          ],
-        },
-
-        ...(Object.entries(planEdits).length
-          ? [
-              {
-                group: "장소 변경 차액 · 1인 기준",
-
-                rows: Object.entries(planEdits).map(([key, place]) => {
-                  const [dayIndex, stopIndex] = key.split("-").map(Number);
-
-                  const originalName =
-                    baseDayPlans[dayIndex]?.[2]?.[stopIndex]?.[2] ||
-                    "기존 장소";
-
-                  return [
-                    place.name,
-
-                    placeEntryCost(place.name) - placeEntryCost(originalName),
-
-                    `${originalName} 대신 선택한 입장·체험비 차이`,
-                  ];
-                }),
-              },
-            ]
-          : []),
-      ].filter((group) => Array.isArray(group.rows) && group.rows.length > 0),
-    [
-      activityRows,
-      baseDayPlans,
-      destinationLabel,
-      intercityTransportTotal,
-      itineraryDistanceKm,
-      localFuelAndParkingPerPerson,
-      localTransport,
-      localTravelTotal,
-      mealRows,
-      nights,
-      originLabel,
-      party,
-      planEdits,
-      rentalFeePerPerson,
-      rooms,
-      routeDistanceKm,
-      selectedFlight,
-      selectedLocalTransportLabel,
-      selectedRental,
-      selectedStay,
-      selectedTransportLabel,
-      selectedTransportMode,
-      stayTotal,
-      tripDurationLabel,
-      usesRental,
-    ],
-  );
-
-  const backendCostItems = Array.isArray(backendPlan?.costEstimate?.items)
-    ? backendPlan.costEstimate.items
-    : [];
-
-  const isSharedBackendCostItem = (item, itemLabel) =>
-    String(item.scope || "").toLowerCase() === "shared" ||
-    /숙박|숙소|호텔|렌터카|주유|유류|통행료|주차/.test(itemLabel);
-
-  const resolveBackendCostItem = (item, { isShared = false } = {}) => {
-    const itemLabel = String(
-      item.placeName ||
-        item.vendorName ||
-        item.name ||
-        item.label ||
-        item.category ||
-        "여행 비용",
-    );
-    const normalizedLabel = itemLabel.replace(/\s+/g, "");
-    const itineraryMatch = itineraryCostRows.find(({ row }) => {
-      const rowLabel = String(row?.[0] || "");
-      const normalizedRowLabel = rowLabel.replace(/\s+/g, "");
-      return (
-        normalizedRowLabel === normalizedLabel ||
-        normalizedRowLabel.includes(normalizedLabel) ||
-        normalizedLabel.includes(normalizedRowLabel)
-      );
-    });
-    const perPersonValue = Number(item.perPerson);
-    const totalValue = Number(item.total);
-    const rawValue =
-      Number.isFinite(perPersonValue) && perPersonValue > 0
-        ? perPersonValue
-        : Number.isFinite(totalValue) && totalValue > 0
-          ? isShared
-            ? totalValue / party
-            : totalValue
-          : 0;
-    const matchedValue = Number(itineraryMatch?.row?.[1] || 0);
-    const itemType = String(
-      item.type || item.itemType || item.category || "",
-    ).toUpperCase();
-    const likelyMeal =
-      itineraryMatch?.type === "meal" ||
-      /RESTAURANT|CAFE|FOOD|MEAL/.test(itemType) ||
-      /식비|식사|카페|커피|메뉴/.test(itemLabel);
-    const fallback = getPlaceCostEstimate(itemLabel, {
-      type: likelyMeal
-        ? /CAFE/.test(itemType)
-          ? "CAFE"
-          : "RESTAURANT"
-        : itemType,
-    });
-    const value =
-      rawValue > 0
-        ? rawValue
-        : matchedValue > 0
-          ? matchedValue
-          : fallback.price;
-
-    return {
-      itemLabel,
-      itineraryMatch,
-      likelyMeal,
-      rawValue,
-      value,
-      note:
-        rawValue > 0
-          ? item.note ||
-            (item.approximate ? "백엔드 예상 견적" : "백엔드 확정 견적")
-          : itineraryMatch?.row?.[2] || `${fallback.source} · 1인 예상`,
-    };
-  };
-
-  const costDetails = backendCostItems.length
-    ? Object.values(
-        backendCostItems.reduce((groups, item) => {
-          const itemLabel = String(
-            item.placeName ||
-              item.vendorName ||
-              item.name ||
-              item.label ||
-              item.category ||
-              "여행 비용",
-          );
-          const isShared = isSharedBackendCostItem(item, itemLabel);
-          const resolvedItem = resolveBackendCostItem(item, { isShared });
-
-          const isMealOrActivity =
-            resolvedItem.itineraryMatch?.type === "activity" ||
-            resolvedItem.likelyMeal ||
-            /식비|식사|카페|커피|메뉴|관광|체험|입장/.test(itemLabel);
-
-          const key = isShared
-            ? `공동 예약·차량비 · ${party}명 N/1`
-            : isMealOrActivity
-              ? "식사·관광비 · 1인 기준"
-              : "개인 교통비 · 1인 기준";
-
-          groups[key] ||= {
-            group: key,
-
-            rows: [],
-          };
-
-          groups[key].rows.push([
-            item.placeName ||
-              item.vendorName ||
-              item.name ||
-              item.label ||
-              item.category ||
-              "여행 비용",
-
-            resolvedItem.value,
-
-            resolvedItem.note,
-          ]);
-
-          return groups;
-        }, {}),
-      )
-    : mockCostDetails;
-
-  const mockTotal = items.reduce(
-    (sum, item) => sum + item.total,
-
-    0,
-  );
-
-  const backendPerPerson = Number(backendPlan?.costEstimate?.perPerson);
-
-  const backendGrandTotal = Number(backendPlan?.costEstimate?.total);
-
-  const backendMissingCostAdjustment = backendCostItems.reduce((sum, item) => {
-    const itemLabel = String(
-      item.placeName ||
-        item.vendorName ||
-        item.name ||
-        item.label ||
-        item.category ||
-        "여행 비용",
-    );
-    const resolved = resolveBackendCostItem(item, {
-      isShared: isSharedBackendCostItem(item, itemLabel),
-    });
-    return (
-      sum + (resolved.rawValue <= 0 && resolved.value > 0 ? resolved.value : 0)
-    );
-  }, 0);
-
-  const calculatedTotal =
-    Number.isFinite(backendPerPerson) && backendPerPerson >= 0
-      ? backendPerPerson + backendMissingCostAdjustment
-      : Number.isFinite(backendGrandTotal) && backendGrandTotal >= 0
-        ? backendGrandTotal / party + backendMissingCostAdjustment
-        : mockTotal;
-
-  const detailedTotal = sumCostGroups(costDetails);
-
-  const total = stablePlanEstimate({
-    calculatedTotal,
-    announcedTotal: backendPlan ? announcedPlanEstimate : 0,
-    detailedTotal,
+    carType,
+    carFuel,
+    budgetStatus,
+    planEdits,
+    backendPlan,
+    announcedPlanEstimate,
+    selectedFlight,
+    selectedRental,
+    selectedStay,
+    nights,
+    party,
+    rooms,
+    routeDistanceKm,
+    selectedTicket,
+    baseDayPlans,
+    dayPlans,
+    placeEditAdjustment,
   });
 
-  const reconciledCostDetails = addPriceVariationBuffer(costDetails, total);
-
-  const confirmedTotal = selectedStay ? total : budgetStatus?.total || total;
-
-  const confirmedInBudget = budget >= confirmedTotal;
-
-  const gap = Math.abs(budget - total);
-
-  const inBudget = budget >= total;
-
-  // Backend가 보존하지 않는 시연용 숙소/렌터카 가격을 tripId별로 저장한다.
-  // 내 예약에서 다시 열 때 동일 스냅샷을 복원해 총액 0원 문제를 방지한다.
-  useEffect(() => {
-    const tripId = backendPlan?.tripId || backendPlan?.id;
-    if (!tripId || !Number.isFinite(Number(total)) || Number(total) <= 0)
-      return;
-
-    const costItems = reconciledCostDetails.flatMap((group) =>
-      (group.rows || []).map(([name, value, note]) => ({
-        name,
-        perPerson: Number(value) || 0,
-        note: note || "",
-        scope: /공동 예약·차량비/.test(group.group || "")
-          ? "shared"
-          : "personal",
-      })),
-    );
-
-    saveTripCostSnapshot(tripId, {
-      savedAt: new Date().toISOString(),
-      totalPerPerson: Number(total) || 0,
-      peopleCount: party,
-      costEstimate: {
-        perPerson: Number(total) || 0,
-        total: (Number(total) || 0) * party,
-        items: costItems,
-      },
-      stay: selectedStay
-        ? {
-            id: selectedStay.id,
-            priceAvg: selectedStay.priceAvg,
-            priceText: selectedStay.priceText,
-          }
-        : null,
-      rental: selectedRental
-        ? {
-            id: selectedRental.id,
-            price: selectedRental.price,
-            company: selectedRental.company,
-            car: selectedRental.car,
-          }
-        : null,
-    });
-  }, [
-    backendPlan?.tripId,
-    backendPlan?.id,
-    total,
-    party,
-    reconciledCostDetails,
-    selectedStay,
-    selectedRental,
-  ]);
-
-  const notify = (text) => {
-    setMessage(text);
-
-    setTimeout(
-      () => setMessage(""),
-
-      2600,
-    );
-  };
-
-  /*
-   * 실제 숙소 추천 API
-   *
-   * POST /api/accommodations/recommend
-   */
-  // ── 03. 숙소·항공 후보 조회와 입력 선택을 처리합니다. ──
-  const loadStayOptions = async () => {
-    const mergeSelectedStay = (nextCatalog, previousCatalog = []) => {
-      const lockedStay = previousCatalog.find(
-        (stay) => String(stay.id) === String(stayId),
-      );
-      if (!lockedStay) return nextCatalog;
-      return nextCatalog.some(
-        (stay) => String(stay.id) === String(lockedStay.id),
-      )
-        ? nextCatalog
-        : [lockedStay, ...nextCatalog];
-    };
-
-    const latitude = Number(destinationLocation?.latitude);
-
-    const longitude = Number(destinationLocation?.longitude);
-
-    const destinationName =
-      destinationLocation?.detail ||
-      destinationLocation?.name ||
-      destinationLocation?.region ||
-      "";
-
-    if (
-      !destinationName ||
-      !Number.isFinite(latitude) ||
-      !Number.isFinite(longitude)
-    ) {
-      setStayCatalog((previous) => mergeSelectedStay([], previous));
-
-      setStayError("숙소 추천을 위해 도착지 좌표가 필요합니다.");
-
-      return false;
-    }
-
-    setStayLoading(true);
-
-    setStayError("");
-
-    try {
-      const result = await recommendAccommodations({
-        destinationName,
-        latitude,
-        longitude,
-
-        limit: 20,
-      });
-
-      const accommodations = Array.isArray(result?.accommodations)
-        ? result.accommodations
-        : [];
-
-      /*
-       * 백엔드 응답
-       * ↓
-       * 기존 프론트 숙소 객체로 normalize
-       */
-      const normalized = accommodations.map((stay) => ({
-        id: stay.accommodationId,
-
-        providerId: stay.providerId,
-
-        name: stay.name,
-
-        area: stay.town || stay.city || stay.province || "숙소",
-
-        address: stay.address,
-
-        latitude: stay.latitude,
-
-        longitude: stay.longitude,
-
-        distanceKm: stay.distanceKm,
-
-        estimatedDriveMinutes: stay.estimatedDriveMinutes,
-
-        rating: stay.rating,
-
-        ratingScale: stay.ratingScale,
-
-        reviewCount: stay.reviewCount ?? 0,
-
-        bayesianRating: stay.bayesianRating,
-
-        recommendationScore: stay.recommendationScore,
-
-        starCount: stay.starCount,
-
-        /*
-         * 숫자 평균가.
-         * null 가능.
-         */
-        priceAvg: stay.priceAvg == null ? null : Number(stay.priceAvg),
-
-        /*
-         * 화면 표시용.
-         * 백엔드에서 거의 전부 존재.
-         */
-        priceText: stay.priceText || "가격 정보 확인",
-
-        image: stay.representativeImageUrl || jejuCoastPhoto,
-
-        providerUrl: stay.providerUrl,
-
-        checkInTime: stay.checkInTime,
-
-        checkOutTime: stay.checkOutTime,
-
-        description: stay.description,
-
-        phoneNumber: stay.phoneNumber,
-
-        isMock: false,
-
-        insight: `${destinationName}에서 약 ${
-          stay.distanceKm ?? "-"
-        }km · 차량 약 ${stay.estimatedDriveMinutes ?? "-"}분`,
-      }));
-
-      setStayCatalog((previous) => mergeSelectedStay(normalized, previous));
-
-      if (import.meta.env.DEV) {
-        console.log(
-          "[ACCOMMODATION] request:",
-
-          {
-            destinationName,
-            latitude,
-            longitude,
-            limit: 20,
-          },
-        );
-
-        console.log(
-          "[ACCOMMODATION] response:",
-
-          result,
-        );
-      }
-
-      if (normalized.length === 0) {
-        setStayError("추천 가능한 숙소를 찾지 못했습니다.");
-
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error(
-        "[ACCOMMODATION] API 호출 실패:",
-
-        error,
-      );
-
-      const nextMessage = error?.message || "숙소 정보를 불러오지 못했습니다.";
-
-      setStayCatalog((previous) => mergeSelectedStay([], previous));
-
-      setStayError(nextMessage);
-
-      notify(nextMessage);
-
-      return false;
-    } finally {
-      setStayLoading(false);
-    }
-  };
-
-  /*
-   * 숙소 모달이 열리면 실제 API 조회.
-   */
-  useEffect(() => {
-    if (!stayOpen) {
-      return;
-    }
-
-    void loadStayOptions();
-  }, [
-    stayOpen,
-
-    destinationLocation?.id,
-
-    destinationLocation?.latitude,
-
-    destinationLocation?.longitude,
-  ]);
-
-  /*
-   * 실제 항공 API 조회
-   */
-  const loadFlightOptions = async (
-    leg = "outbound",
-    requestedAirportCode = origin,
-  ) => {
-    const isReturn = leg === "return";
-
-    const direction = isReturn ? "RETURN" : "OUTBOUND";
-
-    const requestedAirport = flightOriginAirports.find(
-      (airport) => airport.code === requestedAirportCode,
-    );
-
-    const departure = requestedAirport
-      ? `${requestedAirport.city} ${requestedAirport.name}`
-      : flightLocationName(departureLocation);
-
-    const arrival = flightLocationName(destinationLocation);
-
-    if (!departure) {
-      notify("항공편 조회를 위해 출발지를 선택해 주세요.");
-
-      return false;
-    }
-
-    if (!arrival) {
-      notify("항공편 조회를 위해 도착지를 선택해 주세요.");
-
-      return false;
-    }
-
-    if (!startDate || !endDate) {
-      notify("항공편 조회를 위해 여행 날짜를 선택해 주세요.");
-
-      return false;
-    }
-
-    if (!travelers) {
-      notify("항공편 조회를 위해 인원수를 입력해 주세요.");
-
-      return false;
-    }
-
-    setFlightLoading(true);
-
-    setFlightError("");
-
-    try {
-      const result = await searchFlights({
-        departure,
-
-        destination: arrival,
-
-        direction,
-
-        startDate,
-
-        startTime: "00:00",
-
-        endDate,
-
-        endTime: "23:59",
-
-        peopleCount: travelers,
-      });
-
-      const fetchedOutboundFlights = Array.isArray(result?.outboundFlights)
-        ? result.outboundFlights.map(normalizeFlightCandidate)
-        : [];
-
-      const fetchedReturnFlights = Array.isArray(result?.returnFlights)
-        ? result.returnFlights.map(normalizeFlightCandidate)
-        : [];
-
-      setFlightSearchResult((previous) => {
-        const lockedOutbound = previous?.outboundFlights?.find(
-          (flight) => String(flight.id) === String(flightId),
-        );
-        const lockedReturn = previous?.returnFlights?.find(
-          (flight) => String(flight.id) === String(returnFlightId),
-        );
-        const nextOutbound = isReturn
-          ? previous?.outboundFlights || []
-          : lockedOutbound &&
-              !fetchedOutboundFlights.some(
-                (flight) => String(flight.id) === String(lockedOutbound.id),
-              )
-            ? [lockedOutbound, ...fetchedOutboundFlights]
-            : fetchedOutboundFlights;
-        const nextReturn = isReturn
-          ? lockedReturn &&
-            !fetchedReturnFlights.some(
-              (flight) => String(flight.id) === String(lockedReturn.id),
-            )
-            ? [lockedReturn, ...fetchedReturnFlights]
-            : fetchedReturnFlights
-          : previous?.returnFlights || [];
-
-        return {
-          departureAirport:
-            result?.departureAirport || previous?.departureAirport || "",
-          arrivalAirport:
-            result?.arrivalAirport || previous?.arrivalAirport || "",
-          outboundFlights: nextOutbound,
-          returnFlights: nextReturn,
-        };
-      });
-
-      if (!isReturn) {
-        setOrigin(result?.departureAirport || origin);
-      }
-
-      if (import.meta.env.DEV) {
-        console.log(
-          `[FLIGHT] ${direction} request:`,
-
-          {
-            departure,
-
-            destination: arrival,
-
-            direction,
-
-            startDate,
-
-            startTime: "00:00",
-
-            endDate,
-
-            endTime: "23:59",
-
-            peopleCount: travelers,
-          },
-        );
-
-        console.log(
-          `[FLIGHT] ${direction} response:`,
-
-          result,
-        );
-      }
-
-      if (!isReturn && !fetchedOutboundFlights.length) {
-        setFlightError("조회 가능한 가는 항공편이 없습니다.");
-
-        return false;
-      }
-
-      if (isReturn && !fetchedReturnFlights.length) {
-        setFlightError("조회 가능한 오는 항공편이 없습니다.");
-
-        return false;
-      }
-
-      // Start the return lookup only after outbound has finished, respecting
-      // the supplier's existing request throttling. The picker shares it.
-      if (!isReturn) {
-        const resolvedAirport = flightOriginAirports.find(
-          (airport) => airport.code === result?.departureAirport,
-        );
-        void searchFlights({
-          departure: resolvedAirport
-            ? `${resolvedAirport.city} ${resolvedAirport.name}`
-            : departure,
-          destination: arrival,
-          direction: "RETURN",
-          startDate,
-          startTime: "00:00",
-          endDate,
-          endTime: "23:59",
-          peopleCount: travelers,
-        }).catch(() => {
-          // Optional warm-up must not interrupt outbound selection.
-          // Failed requests aren't cached; opening return retries normally.
-        });
-      }
-
-      return true;
-    } catch (error) {
-      console.error(
-        `[FLIGHT] ${direction} API 호출 실패:`,
-
-        error,
-      );
-
-      const nextMessage = error?.message || "항공편을 불러오지 못했습니다.";
-
-      setFlightSearchResult((previous) => ({
-        departureAirport: previous?.departureAirport || "",
-
-        arrivalAirport: previous?.arrivalAirport || "",
-
-        outboundFlights: previous?.outboundFlights || [],
-
-        returnFlights: previous?.returnFlights || [],
-      }));
-
-      setFlightError(nextMessage);
-
-      notify(nextMessage);
-
-      return false;
-    } finally {
-      setFlightLoading(false);
-    }
-  };
-
+  // ── 03. 입력 변경과 예약 선택의 의존성을 조율합니다. 조회는 전용 훅이 담당합니다. ──
   const submitPrompt = () => {
     if (!prompt.trim()) {
       return notify("원하는 여행을 한 문장으로 적어주세요.");
@@ -2079,6 +963,8 @@ function useTripPlanner() {
   };
 
   const resetRouteBookings = () => {
+    invalidateFlightOptions();
+    invalidateStayOptions();
     try {
       const currentDraft = JSON.parse(
         window.localStorage.getItem("tripDraft") || "{}",
@@ -2368,8 +1254,8 @@ function useTripPlanner() {
 
     const hasStructuredLocation = Boolean(
       suppliedLocation.regionCode ||
-        (Number.isFinite(suppliedLocation.latitude) &&
-          Number.isFinite(suppliedLocation.longitude)),
+      (Number.isFinite(suppliedLocation.latitude) &&
+        Number.isFinite(suppliedLocation.longitude)),
     );
 
     const locationBase = hasStructuredLocation
@@ -4119,6 +3005,8 @@ function useTripPlanner() {
 
     stayArea,
     setStayArea,
+    stayCustomArea,
+    setStayCustomArea,
 
     priceBand,
     setPriceBand,

@@ -8,6 +8,9 @@
 | --- | --- | --- |
 | 화면 구성과 조건 입력 | [App.jsx](../frontend/src/App.jsx) | [여행 상태 조율](../frontend/src/hooks/useTripPlanner.js) |
 | 초안 복원·로컬 경비 보존 | [plannerStorage.js](../frontend/src/planner/plannerStorage.js) | [훅에서 사용하는 위치](../frontend/src/hooks/useTripPlanner.js) |
+| 항공·숙소 조회 상태 | [useFlightOptions](../frontend/src/hooks/useFlightOptions.js), [useStayOptions](../frontend/src/hooks/useStayOptions.js) | [오래된 응답 방지](../frontend/src/hooks/useLatestPlannerRequest.js) |
+| 경비 모델·스냅샷 | [tripCostModel](../frontend/src/planner/tripCostModel.js) | [계산·저장 훅](../frontend/src/hooks/useTripCostEstimate.js) |
+| 알림 수명 | [usePlannerNotice](../frontend/src/hooks/usePlannerNotice.js) | 연속 알림 타이머 교체와 언마운트 정리 |
 | 항공 후보 표시와 저장 형식 | [flightCandidates.js](../frontend/src/planner/flightCandidates.js) | [항공 API](../frontend/src/api/flightApi.js), [항공 정렬](../frontend/src/utils/flightRanking.js) |
 | UI 선택값 ↔ 서버 코드 | [domainMappings.js](../frontend/src/planner/domainMappings.js) | [취향 허용값](../frontend/src/planner/preferences.js) |
 | 비동기 생성·응답 변환 | [tripPlanApi.js](../frontend/src/api/tripPlanApi.js) | [공통 인증·HTTP 처리](../frontend/src/api/apiClient.js) |
